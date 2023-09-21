@@ -8,17 +8,18 @@ public class ProgramNode extends Node{
 	LinkedList<EndBlockNode> endBlocks;
 	
 	
-	ProgramNode(){
+	ProgramNode(LinkedList<FunctionDefinitionNode> FunctionDefNodes, LinkedList<BlockNode> BlockNodes
+			, LinkedList<StartBlockNode> StartBlocks, LinkedList<EndBlockNode> EndBlocks){
 		
-		functionDefNodes = new LinkedList<FunctionDefinitionNode>();
-		blockNodes = new LinkedList<BlockNode>();
-		startBlocks =  new LinkedList<StartBlockNode>();
-		endBlocks = new LinkedList<EndBlockNode>();
+		functionDefNodes = FunctionDefNodes;
+		blockNodes = BlockNodes;
+		startBlocks =  StartBlocks;
+		endBlocks = EndBlocks;
 		
 	}
 	public String ToString() {
 		
 		
-		return "";
+		return functionDefNodes.toString() + blockNodes.toString() + startBlocks.toString() + endBlocks.toString() +" ";
 	}
 }

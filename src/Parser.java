@@ -48,5 +48,16 @@ public class Parser {
 		
 		return false;
 	}
+	public boolean ParseFunction() {
+		
+		return false;
+	}
+	public BlockNode ParseBlock() {
+		
+		return new BlockNode();
+		
+	}
+	
+	
 }
 	
