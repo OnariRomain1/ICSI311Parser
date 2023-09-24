@@ -5,14 +5,12 @@ public class TokenManager {
 	
 	private LinkedList<Token> tokenStream;
 	
+	
 	TokenManager(LinkedList<Token> tokenStream){
 		
 		this.tokenStream = tokenStream;
 		
 	}
-	
-	
-	
 	/*
 	 * Helper Methods
 	 */
@@ -31,17 +29,20 @@ public class TokenManager {
 			return Optional.empty();
 		}
 	}
+	
 	/*
-	 * This works just fix the junit for it. 
-	 * It current Expects Optional[FOR(null)] but with my test its 
-	 * Optional[FOR]
-	 * also in the future create more test cases to see if it wont break 
-	 * the same things happening for my peek 
+	 * looks at the head of the list. 
+	 * If the token type of the head is the same as what was passed in, 
+	 * remove that token from the list and return it. 
 	 */
 	Optional<Token> MatchAndRemove(TokenType t){
 		
 		Token head = tokenStream.getFirst();
-	
+		
+		if(head ==null ||head.getTokenType()== null) {
+			return Optional.empty();
+		}
+
 		if(head.getTokenType().equals(t)) {
 			tokenStream.removeFirst();
 			return Optional.ofNullable(head);
@@ -50,7 +51,9 @@ public class TokenManager {
 		}
 		
 	}
-	
+	/*
+	 * returns true if the token list is not empty
+	 */
 	boolean MoreTokens() {
 		
 		return !tokenStream.isEmpty();

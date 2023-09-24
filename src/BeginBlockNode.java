@@ -1,12 +1,14 @@
 
-public class EndBlockNode extends Node{
-
+public class BeginBlockNode extends Node {
+	
 	BlockNode blockNode;
-	EndBlockNode(BlockNode blockNode){
+	BeginBlockNode(BlockNode blockNode){
 		this.blockNode = blockNode;
 	}
 	
 	public String ToString() {
+		
 		return "";
 	}
+
 }

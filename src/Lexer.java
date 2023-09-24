@@ -107,9 +107,10 @@ public class Lexer {
     	 oneCharacterSymbolTokens.put("* ", TokenType.MULTIPLY);
     	 oneCharacterSymbolTokens.put("/", TokenType.DIVIDE);
     	 oneCharacterSymbolTokens.put("%", TokenType.MODULUS);
-    	 oneCharacterSymbolTokens.put(";", TokenType.SEPERATOR);
-    	 oneCharacterSymbolTokens.put("\n", TokenType.SEPERATOR);
+    	 oneCharacterSymbolTokens.put(";", TokenType.SEPARATOR);
+    	 oneCharacterSymbolTokens.put("\n", TokenType.SEPARATOR);
     	 oneCharacterSymbolTokens.put("|", TokenType.OR);
+    	 oneCharacterSymbolTokens.put(",", TokenType.COMMA);
     	 
     	 
     }
@@ -149,7 +150,7 @@ public class Lexer {
         	 
         	 
         // create seperator token add to linkedList increment characterPosition increment line number and set linePosition to 0
-        	  Token seperatorToken = new Token(TokenType.SEPERATOR,linePosition,currentCharacterPosition);
+        	  Token seperatorToken = new Token(TokenType.SEPARATOR,linePosition,currentCharacterPosition);
               tokensLinkedList.add(seperatorToken);
               currentCharacterPosition++; 
               lineNumber++;
@@ -199,7 +200,7 @@ public class Lexer {
     		}   
     	  
     	   	currentCharacterPosition = charPosition;
-            currentCharacterPosition++;
+         //   currentCharacterPosition++;
          
 
         }
@@ -218,9 +219,9 @@ public class Lexer {
          	currentCharacterPosition = charPosition;
             currentCharacterPosition++;
          	
-       } Token symbolToken = ProcessSymbol(currentCharacterPosition);
-
-       if (symbolToken != null) {
+       } 
+       else if (ProcessSymbol(currentCharacterPosition) != null) {
+    	   Token symbolToken = ProcessSymbol(currentCharacterPosition);
            tokensLinkedList.add(symbolToken);
            currentCharacterPosition = charPosition; // Update the current position
        } else {
@@ -228,7 +229,7 @@ public class Lexer {
        }
        //may need currentCharacterPosition = charPosition;
        //Im gonna take a break now 
-       	currentCharacterPosition++; // Increment the position
+     //  	currentCharacterPosition++; // Increment the position
 
     }
        
@@ -304,7 +305,7 @@ public class Lexer {
 	        letterOrUnderscoreToken = new Token(TokenType.WORD, linePosition, currentPosition, word);
 	    }
 
-	    //sets teh charPosition to the current position
+	    //sets the charPosition to the current position
 	    charPosition = currentPosition;
 	    return letterOrUnderscoreToken;
     }
@@ -358,9 +359,9 @@ public class Lexer {
      
     	 int currentCharacterIndex = index;
     	 int linePosition = lineNumber;
-    	 String symbolCharacter = awkFile.PeekString(1);
-    	 String twoCharacterSymbol = awkFile.PeekString(2);;
-    	 Token SymbolToken ;
+    	 String symbolCharacter = awkFile.PeekString(currentCharacterIndex,1);
+    	 String twoCharacterSymbol = awkFile.PeekString(currentCharacterIndex,2);;
+    	 Token SymbolToken;
     	 
     	 
     	 

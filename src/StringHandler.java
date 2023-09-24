@@ -2,7 +2,7 @@
 public class StringHandler {
 
 	private String awkFile;
-	private int indexPos = 0;
+	private int indexPos;
 	
 	/*
 	 * looks “i” characters ahead and returns that character; 
@@ -41,16 +41,16 @@ public class StringHandler {
 	 * characters but doesn’t move the index
 	 */
 
-	public String PeekString(int charAhead) {
+	public String PeekString(int currentPos,int charAhead) {
 
-		int newPosition = indexPos + charAhead;
+		int newPosition = currentPos + charAhead;
 
-		if (newPosition < awkFile.length()){
-			return awkFile.substring(indexPos ,newPosition);
+		if (newPosition <= awkFile.length()){
+			return awkFile.substring(currentPos ,newPosition);
 
 		} else {
 
-			return awkFile.substring(indexPos);
+			return "";
 
 		}
 	}

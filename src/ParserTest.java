@@ -8,26 +8,101 @@ public class ParserTest {
 
 	
 	@Test
-	public void AcceptSeperators() {
+	public void AcceptSeparators() {
 		
-	//eventually need to switch to testing with a lexer but for now this should test basic cases for now
+		Lexer lexer = new Lexer(";abcd");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
 		
-		LinkedList<Token> tokenStream = new LinkedList<Token>();
-		Token firstToken = new Token(TokenType.SEPERATOR, 0,0);
-		Token secondToken = new Token(TokenType.WORD,0,0,"Word");
-		tokenStream.add(firstToken);
-		tokenStream.add(secondToken);
-		
-		Parser parser = new Parser(tokenStream);
-		
-		assertTrue(parser.AcceptSeperators());
-		
-		tokenStream.remove(firstToken);
-		tokenStream.remove(secondToken);
-		
-		assertFalse(parser.AcceptSeperators());
-	
+		assertTrue(parser.AcceptSeparators());
+	}
+	@Test
+	public void AcceptSeparatorsNoSeparator() {
+		Lexer lexer = new Lexer("No Separator");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		assertFalse(parser.AcceptSeparators());
 	}
 	
+	@Test
+	public void testParseFunction_ValidFunctionDefinition() throws Exception {
+     
+		Lexer lexer = new Lexer("function myFunction(a, b)");
+		lexer.Lex();
+       
+        Parser parser = new Parser(lexer.GetLinkedListTokens());
+        ProgramNode programNode = parser.getProgramNode();
+        boolean result = parser.ParseFunction(programNode);
+
+        assertTrue(result); 
+        assertEquals(1, programNode.getFunctionDefNodes().size()); 
+        assertEquals("myFunction", programNode.getFunctionDefNodes().get(0).getName());
+        assertEquals(2, programNode.getFunctionDefNodes().get(0).getParameters().size()); 
+        
+    }
+	
+	@Test
+	public void testParseFunction_NoValidFunctionDefinition() throws Exception {
+     
+		Lexer lexer = new Lexer(" myFunction(a, b)");
+		lexer.Lex();
+       
+        Parser parser = new Parser(lexer.GetLinkedListTokens());
+        ProgramNode programNode = parser.getProgramNode();
+        boolean result = parser.ParseFunction(programNode);
+
+        assertFalse(result); 
+        assertEquals(0, programNode.getFunctionDefNodes().size()); 
+     
+    }
+
+	@Test
+	public void testParseActionBegin() {
+		
+		Lexer lexer = new Lexer("BEGIN{}");
+		lexer.Lex();
+		
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    ProgramNode programNode = parser.getProgramNode();
+	    
+	    boolean result = parser.ParseAction(programNode);
+	    
+	    assertTrue(result);
+	    assertEquals(1, programNode.getStartBlocks().size()); 
+	
+	    
+		
+	}
+	@Test
+	public void testParseActionEnd() {
+		
+		Lexer lexer = new Lexer("END{}");
+		lexer.Lex();
+		
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    ProgramNode programNode = parser.getProgramNode();
+	    
+	    boolean result = parser.ParseAction(programNode);
+	    
+	    assertTrue(result);
+	    assertEquals(1, programNode.getEndblocks().size()); 
+	 
+	}
+	@Test
+	public void testParseActionNoKeyWord() {
+		
+		Lexer lexer = new Lexer("/* statements */");
+		lexer.Lex();
+		
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    ProgramNode programNode = parser.getProgramNode();
+	    
+	    boolean result = parser.ParseAction(programNode);
+	    assertTrue(result);
+	    assertEquals(1, programNode.getBlockNodes().size()); 
+
+	    
+	}
+
 	
 }

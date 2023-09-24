@@ -4,22 +4,44 @@ public class ProgramNode extends Node{
 	
 	LinkedList<FunctionDefinitionNode> functionDefNodes;
 	LinkedList<BlockNode> blockNodes;
-	LinkedList<StartBlockNode> startBlocks;
+	LinkedList<BeginBlockNode> startBlocks;
 	LinkedList<EndBlockNode> endBlocks;
 	
 	
-	ProgramNode(LinkedList<FunctionDefinitionNode> FunctionDefNodes, LinkedList<BlockNode> BlockNodes
-			, LinkedList<StartBlockNode> StartBlocks, LinkedList<EndBlockNode> EndBlocks){
+	/*The ProgramNode Constructor 
+	initializes the linkedLists
+	*/
+	ProgramNode(){
 		
-		functionDefNodes = FunctionDefNodes;
-		blockNodes = BlockNodes;
-		startBlocks =  StartBlocks;
-		endBlocks = EndBlocks;
+		functionDefNodes = new LinkedList<FunctionDefinitionNode>();
+		blockNodes = new LinkedList<BlockNode>();
+		startBlocks =  new LinkedList<BeginBlockNode>();
+		endBlocks =new LinkedList<EndBlockNode>();
 		
 	}
+
 	public String ToString() {
-		
-		
-		return functionDefNodes.toString() + blockNodes.toString() + startBlocks.toString() + endBlocks.toString() +" ";
+
+		return functionDefNodes.toString() + startBlocks.toString() + blockNodes.toString()+ endBlocks.toString();
 	}
+	
+	/*
+	 * Accessor Methods
+	 */
+	public LinkedList<FunctionDefinitionNode> getFunctionDefNodes() {
+		
+		return functionDefNodes;
+	}
+	
+	public LinkedList<BlockNode> getBlockNodes(){
+		return blockNodes;
+	}
+	
+	public LinkedList<BeginBlockNode> getStartBlocks(){
+		return startBlocks;
+	}
+	public LinkedList<EndBlockNode> getEndblocks(){
+		return endBlocks;
+	}
+	
 }
