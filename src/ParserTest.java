@@ -1,6 +1,7 @@
 import static org.junit.Assert.*;
 
 import java.util.LinkedList;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,20 @@ public class ParserTest {
 	    assertEquals(1, programNode.getBlockNodes().size()); 
 
 	    
+	}
+	
+	@Test
+	public void testParseBottomLevel() throws Exception {
+
+		Lexer lexer = new Lexer("++a");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+
+	   // assertTrue(result.isPresent());
+	    
+	        assertTrue(result.get() instanceof OperationNode);
 	}
 
 	

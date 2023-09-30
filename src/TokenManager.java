@@ -37,9 +37,9 @@ public class TokenManager {
 	 */
 	Optional<Token> MatchAndRemove(TokenType t){
 		
-		Token head = tokenStream.getFirst();
+		Token head = tokenStream.element();
 		
-		if(head ==null ||head.getTokenType()== null) {
+		if(head == null ||head.getTokenType()== null) {
 			return Optional.empty();
 		}
 

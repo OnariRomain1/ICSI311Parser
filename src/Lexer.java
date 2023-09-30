@@ -111,6 +111,7 @@ public class Lexer {
     	 oneCharacterSymbolTokens.put("\n", TokenType.SEPARATOR);
     	 oneCharacterSymbolTokens.put("|", TokenType.OR);
     	 oneCharacterSymbolTokens.put(",", TokenType.COMMA);
+    	 oneCharacterSymbolTokens.put("`", TokenType.PATTERN);
     	 
     	 
     }
