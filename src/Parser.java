@@ -30,7 +30,7 @@
 		 * The AcceptSeperators Method
 		 * 
 		 * While there are more tokens 
-		 * if the theres a tokenType of seperator within the list return true
+		 * if the there is a tokenType of separator within the list return true
 		 * otherwise its false.
 		 */
 		
@@ -182,52 +182,54 @@
 			    
 			return true;
 		}
-		/*
-		 * Test this and ParsLValue then check if anything else needs to be done otherwise this assignment is done.
-		 */
+	
 		Optional<Node>ParseBottomLevel() throws Exception{
 			
-			Optional<Token> number = tokenManager.MatchAndRemove(TokenType.NUMBER);
-			Optional<Token> stringLiteral = tokenManager.MatchAndRemove(TokenType.STRINGLITERAL);
-			Optional<Token> LParen = tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS);
-			Optional<Token> RParen = tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS);
-			Optional<Token> Not = tokenManager.MatchAndRemove(TokenType.NOT);
-			Optional<Token> pattern = tokenManager.MatchAndRemove(TokenType.REGULAREXPRESSION);
-			Optional<Token> minus = tokenManager.MatchAndRemove(TokenType.MINUS);
-			Optional<Token> plus = tokenManager.MatchAndRemove(TokenType.PLUS);
-			Optional<Token> Increment = tokenManager.MatchAndRemove(TokenType.PLUSPLUS);
-			Optional<Token> Decrement = tokenManager.MatchAndRemove(TokenType.MINUSMINUS);
 			Optional<Node> parseOp;
-			OperationNode opNode;
-			
-			if(stringLiteral.isPresent()) {
-				return Optional.of(new ConstantNode(stringLiteral.get().getTokenValue()));
+			/*
+			 * checks if the token is present then creates a constant node with the value from the token and returns it
+			 */
+			Optional<Token> stringLiteralToken = tokenManager.MatchAndRemove(TokenType.STRINGLITERAL);
+			if(stringLiteralToken.isPresent()) {
+				String stringLiteral = stringLiteralToken.get().getTokenValue();
+				ConstantNode constantNode = new ConstantNode(stringLiteral);
+				return Optional.of(constantNode);
 			}
-			else if (number.isPresent()) {
-				return Optional.of(new ConstantNode(number.get().getTokenValue()));
-			}else if (pattern.isPresent()){
-				return Optional.of(new PatternNode(pattern.get().getTokenValue()));
-			}
+			Optional<Token> numberToken = tokenManager.MatchAndRemove(TokenType.NUMBER);
+			 if (numberToken.isPresent()) {
+				String number = numberToken.get().getTokenValue();
+				ConstantNode constantNode = new ConstantNode(number);
+				return Optional.of(constantNode);
 			
-			else if (LParen.isPresent()) {
+			}Optional<Token> regexToken = tokenManager.MatchAndRemove(TokenType.REGULAREXPRESSION);
+			 if (regexToken.isPresent()){
+				String pattern = regexToken.get().getTokenValue();
+				PatternNode patternNode = new PatternNode(pattern);
+				return Optional.of(patternNode);
+			}
+			//calls parseOperations while inside the parenthesis then returns parseOp which is the token with the ParseOperation call inside of it
+			 if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isPresent()) {
 				parseOp = ParseOperation();
-				if (RParen.isEmpty()) {
-					throw new Exception();
-				}
+				if (!tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isPresent()) {
+				    throw new Exception("Missing Right Parenthesis");
+				   }
 				return parseOp;
-			} else if (Not.isPresent()){
+			/*
+			 * if the tokens are present return an Operation Node with parseOp and the tokens type as the parameters 
+			 */
+			}  if (tokenManager.MatchAndRemove(TokenType.NOT).isPresent()){
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.NOT));
-			} else if(minus.isPresent()) {
+			} else if(tokenManager.MatchAndRemove(TokenType.MINUS).isPresent()) {
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.UNARYNEG));
-			} else if(plus.isPresent()) {
+			} else if(tokenManager.MatchAndRemove(TokenType.PLUS).isPresent()) {
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.UNARYPOS));
-			} else if(Increment.isPresent()) {
+			} else if(tokenManager.MatchAndRemove(TokenType.PLUSPLUS).isPresent()) {
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.PREINC));
-			}else if(Decrement.isPresent()) {
+			}else if(tokenManager.MatchAndRemove(TokenType.MINUSMINUS).isPresent()) {
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.PREDEC));
 			} else {
@@ -235,44 +237,36 @@
 			}
 			
 			
-		//	return Optional.empty();
+
 		}
 		/*
-		 * There're definitely somethings that need to be changed but for now move on 
-		 * and come back to things once everything else has been attempted.
-		 */
+		 * 
+		 * 		 */
 		Optional<Node> ParseLValue() throws Exception{
-			Optional<Token> leftBracket = tokenManager.MatchAndRemove(TokenType.LEFTBRACKET);
-			Optional<Token> dollarSign = tokenManager.MatchAndRemove(TokenType.DOLLARSIGN);
-			Optional<Node> expressionIndex;
-			Optional<Node> parseBottomL;
-			Optional<Token> word = tokenManager.MatchAndRemove(TokenType.WORD);
-			Optional<Token> rightBracket = tokenManager.MatchAndRemove(TokenType.RIGHTBRACKET);
 			//DOLLAR + ParseBottomLevel()  OperationNode(value, DOLLAR)
 			
-			if(dollarSign.isPresent()) {
-				parseBottomL = ParseBottomLevel();
-				return Optional.of(new OperationNode(parseBottomL ,Operations.DOLLAR));
+			if(tokenManager.MatchAndRemove(TokenType.DOLLARSIGN).isPresent()) {
+				return Optional.of(new OperationNode(ParseBottomLevel() ,Operations.DOLLAR));
 				
 			}
 			//WORD + OPENARRAY + ParseOperation() + CLOSEARRAY  VariableReferenceNode(name, index)
-			else if(word.isPresent()) {
-				if (leftBracket.isPresent()) {
-					expressionIndex = ParseOperation();
-					if (rightBracket.isEmpty()) {
-						throw new Exception();
-					}
-					return Optional.of(new VariableReferenceNode(word.get().getTokenValue(), expressionIndex));
+			Optional<Token>matchedWordToken  = tokenManager.MatchAndRemove(TokenType.WORD);
+			if(matchedWordToken.isPresent()) {
+				String word = matchedWordToken.get().getTokenValue();
+				 if ( tokenManager.MatchAndRemove(TokenType.LEFTBRACKET).isPresent()) {
+					Optional<Node> expressionIndex = ParseOperation();
+					Optional<Token> rightBracket = tokenManager.MatchAndRemove(TokenType.RIGHTBRACKET);
+					if (rightBracket.isPresent()) {
+						return Optional.of(new VariableReferenceNode(matchedWordToken.get().getTokenValue(), expressionIndex));
+						}
+				 }else {
+					 //WORD (and no OPENARRAY)  VariableReferenceNode(name)
+					 return Optional.of(new VariableReferenceNode(word));
+				 }
 				}
 			
+					return Optional.empty();
 			
-				else if(word.isPresent()) {
-				if (leftBracket.isEmpty()) {
-					return Optional.of(new VariableReferenceNode(word.get().getTokenValue()));
-				}
-			}
-			}
-			return Optional.empty();
 		}
 		
 		public BlockNode ParseBlock() {
@@ -280,7 +274,7 @@
 			return new BlockNode();
 			
 		}
-		
+
 		public Optional<Node> ParseOperation() throws Exception {
 			
 			return ParseBottomLevel();

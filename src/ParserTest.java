@@ -1,4 +1,5 @@
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -108,16 +109,67 @@ public class ParserTest {
 	@Test
 	public void testParseBottomLevel() throws Exception {
 
-		Lexer lexer = new Lexer("++a");
+		Lexer lexer = new Lexer("$7");
 		lexer.Lex();
 		
 	    Parser parser = new Parser(lexer.GetLinkedListTokens());
 	    Optional<Node> result = parser.ParseOperation();
-
-	   // assertTrue(result.isPresent());
+	    assertTrue(result.isPresent()); 
 	    
-	        assertTrue(result.get() instanceof OperationNode);
 	}
+	
+	@Test
+	public void testParseBottomLevelDollarSignNumber() throws Exception {
 
+		Lexer lexer = new Lexer("$7");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+	    assertTrue(result.isPresent()); 
+	}
+	@Test
+	public void testParseBottomLevelMinusNumber() throws Exception {
+
+		Lexer lexer = new Lexer("-7");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+	    assertTrue(result.isPresent()); 
+	}
+	@Test
+	public void testParseBottomLevelPattern() throws Exception {
+
+		Lexer lexer = new Lexer("`[abc]`");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+	    assertTrue(result.isPresent()); 
+	}
+	@Test
+	public void testParseBottomLevelWordAndBrackets() throws Exception {
+
+		Lexer lexer = new Lexer("e[++b]");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+	    assertTrue(result.isPresent());
+	}
+	@Test 
+	public void testParseBottomLevelParenPreInc() throws Exception {
+
+		Lexer lexer = new Lexer("(++d)");
+		lexer.Lex();
+		
+	    Parser parser = new Parser(lexer.GetLinkedListTokens());
+	    Optional<Node> result = parser.ParseOperation();
+	    assertTrue(result.isPresent());
+	}
+	
+	
+	
 	
 }

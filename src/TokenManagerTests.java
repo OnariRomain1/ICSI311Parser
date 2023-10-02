@@ -25,8 +25,9 @@ public class TokenManagerTests {
 		token.add(testToken2);
 		TokenManager tokenManager = new TokenManager(token);
 		 Optional<Token> expected = Optional.of(testToken);
+		 Optional<Token> expected2 = Optional.of(testToken);
 		assertEquals(tokenManager.MatchAndRemove(TokenType.FOR), expected);
-		
+		assertEquals(tokenManager.MatchAndRemove(TokenType.BREAK), testToken);
 	}
 	
 	@Test

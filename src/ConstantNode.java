@@ -5,4 +5,8 @@ public class ConstantNode extends Node {
 	ConstantNode(String value){
 		this.value = value;
 	}
+
+	public String getValue() {
+		return value + " ";
+	}
 }

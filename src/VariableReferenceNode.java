@@ -12,4 +12,8 @@ public class VariableReferenceNode extends Node{
 		variableName = Variablename;
 		node = index;
 	}
+	
+	public String toString() {
+		return variableName + " ";
+	}
 }

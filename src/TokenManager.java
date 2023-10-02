@@ -37,20 +37,20 @@ public class TokenManager {
 	 */
 	Optional<Token> MatchAndRemove(TokenType t){
 		
-		Token head = tokenStream.element();
+		Token head = tokenStream.getFirst();
 		
-		if(head == null ||head.getTokenType()== null) {
+		if(head == null) {
 			return Optional.empty();
 		}
 
 		if(head.getTokenType().equals(t)) {
-			tokenStream.removeFirst();
-			return Optional.ofNullable(head);
+			return Optional.ofNullable(tokenStream.pop());
 		}else {
 			return Optional.empty();
 		}
 		
 	}
+	
 	/*
 	 * returns true if the token list is not empty
 	 */
