@@ -17,6 +17,11 @@ public class OperationNode extends Node{
 		this.right = right;
 		operations = operation;
 	}
+	OperationNode(Node left, Operations operation, Optional<Node> right){
+		this.left = left;
+		operations = operation;
+		this.right = right;
+	}
 
 	public String toString() {
 		return "";

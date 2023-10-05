@@ -269,6 +269,57 @@
 			
 		}
 		
+		Optional<Node> ParseFactor() throws Exception{
+			
+			Optional<Token> number = tokenManager.MatchAndRemove(TokenType.NUMBER);
+			if (number.isPresent()) {
+			//	return Optional.of(number);
+			} 
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isPresent()) {
+				Optional<Node> expression = ParseExpression();
+				if(expression == null) {
+					throw new Exception();
+				}
+				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+					throw new Exception();
+				}
+			}
+			
+			
+			
+			return Optional.empty();
+		}
+		Optional<Node> ParseTerm() throws Exception{
+			Optional<Node> left = ParseFactor();
+			do {
+				//needs to be an optional of node not token figure out later.
+				Optional<Token>operation = tokenManager.MatchAndRemove(TokenType.MULTIPLY);
+				
+			//	if (operations)
+			} while (true);
+			
+		
+		}
+		
+		Optional<Node> ParseExpression() throws Exception{
+			
+			Optional<Node> left = ParseTerm();
+			do {
+				Optional<Token>operation = tokenManager.MatchAndRemove(TokenType.PLUS);
+				if (operation.isEmpty()) {
+					operation = tokenManager.MatchAndRemove(TokenType.MINUS);
+				}
+				if (operation.isEmpty()){
+					return left;
+				}
+				Optional<Node> right  = ParseTerm();
+			//	Optional<Node> left =  Optional.of(new OperationNode(left, operation, right));
+			} while (true);
+			
+		//	return Optional.empty();
+			}
+		
+		
 		public BlockNode ParseBlock() {
 			
 			return new BlockNode();
