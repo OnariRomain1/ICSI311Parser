@@ -14,6 +14,12 @@ public class VariableReferenceNode extends Node{
 	}
 	
 	public String toString() {
-		return variableName + " ";
+		if (node == null) {
+			return "VariableReferenceNode("+ variableName +")";
+		
+		}else {
+			return "VariableReferenceNode("+ variableName + "," + node.toString() +") ";
+		}
+	
 	}
 }

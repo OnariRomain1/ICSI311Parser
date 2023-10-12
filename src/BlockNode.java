@@ -10,7 +10,7 @@ public class BlockNode extends Node{
 		statementNodes = new LinkedList<StatementNode>();
 		conditionNodes =  Optional.empty();
 	}
-	public String ToString() {
+	public String toString() {
 		return "";
 	}
 }

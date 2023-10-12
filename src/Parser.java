@@ -2,7 +2,6 @@
 	import java.util.LinkedList;
 	import java.util.List;
 	import java.util.Optional;
-	
 	public class Parser {
 		
 		TokenManager tokenManager;
@@ -25,6 +24,25 @@
 			return programNode;
 		}
 		
+
+		public BlockNode ParseBlock() {
+			
+			return new BlockNode();
+			
+		}
+		
+		/*
+		public BlockNode ParseStatement() {
+		
+			Optional<Token> curlyBrace = tokenManager.MatchAndRemove(TokenType.LEFTCURLYBRACKET);
+			
+			if (curlyBrace.isPresent()) {
+				
+			}
+			return new BlockNode();
+		}
+		
+		*/
 		
 		/*
 		 * The AcceptSeperators Method
@@ -183,6 +201,356 @@
 			return true;
 		}
 	
+		/*
+		 * The ParseConcatenation method handles concatenation 
+		 * first call parseExpression 
+		 * if its not empty create an OperationNode 
+		 * if its empty returns ParseExpression
+		 */
+		Optional<Node> ParseConcatenation() throws Exception{
+			
+			Optional<Node> left = ParseExpression();
+			do {
+				
+			if (left.isEmpty()) {
+				return left;
+			}
+			left =  Optional.of(new OperationNode(left.get(),Operations.CONCATENATION, ParseExpression()));
+			
+			} while (true);
+		}
+		
+		/*
+		 * The ParseArrayMemberShip method handles Array Membership
+		 * calls Parsematch then checks for in token 
+		 * then checks for a word token then makes an operationNode 
+		 * if there is no "in" token returns ParseMatch.
+		 */
+		Optional<Node> ParseArrayMemberShip() throws Exception{
+			
+			Optional<Node> left = ParseMatch();
+			do {
+			Optional<Token> in = tokenManager.MatchAndRemove(TokenType.IN);
+			if (in.isEmpty()) {
+				return left;
+			}
+			Optional<Token> word = tokenManager.MatchAndRemove(TokenType.WORD);
+			if (word.isEmpty()) {
+				throw new Exception("Missing word token.");
+			}
+			OperationNode opNode = new OperationNode(left.get(), Operations.IN, ParseBottomLevel());
+			return Optional.of(opNode);
+			}while(true);
+		}
+		
+		
+		/*
+		 * The ParseTernary method handles Ternary Operations
+		 * Calls ParseOr 
+		 * then looks for the ternary operator 
+		 * then calls ParseOr again then checks for a colon
+		 * aftewards call ParseOr then create the ternaryNode 
+		 * if ternary operator is empty it calls ParsOr
+		 */
+		Optional<Node> ParseTernary() throws Exception{
+			
+			Optional<Node> condition = ParseOr();
+			do {
+			Optional<Token> ternaryOp = tokenManager.MatchAndRemove(TokenType.TERNARYOPERATOR);
+			
+			if(ternaryOp.isEmpty()) {
+				return condition;
+			}
+			Optional<Node> trueCase = ParseOr();
+			
+			Optional<Token> colon = tokenManager.MatchAndRemove(TokenType.COLON);
+			
+			if (colon.isEmpty()) {
+				throw new Exception("Missing colon");
+			}
+			
+			Optional<Node> falseCase = ParseOr();
+			
+			TernaryNode ternaryNode = new TernaryNode(condition.get(), trueCase.get(), falseCase.get());
+			
+			return Optional.of(ternaryNode);
+			}while(true);
+			
+		}
+		/*
+		 * The ParseExpression method Handles expressions
+		 * calls the left parseTerm then checks for the specified tokens
+		 * then calls the right ParseTerm 
+		 * and creates an OperationNode
+		 */
+		Optional<Node> ParseExpression() throws Exception{
+			
+			Optional<Node> left = ParseTerm();
+			Operations op;
+			do {
+				Optional<Token> operation = tokenManager.MatchAndRemove(TokenType.PLUS);
+				op = Operations.ADD;
+				if (operation.isEmpty()) {
+					operation = tokenManager.MatchAndRemove(TokenType.MINUS);
+					op = Operations.SUBTRACT;
+					if (operation.isEmpty()){
+						operation = tokenManager.MatchAndRemove(TokenType.LESSTHAN);
+						op = Operations.LT;
+						if (operation.isEmpty()) {
+							operation = tokenManager.MatchAndRemove(TokenType.LESSTHANOREQUALTO);
+							op = Operations.LE;
+							if (operation.isEmpty()) {
+								operation = tokenManager.MatchAndRemove(TokenType.NOTEQUAL);
+								op = Operations.NE;
+								if (operation.isEmpty()) {
+									operation = tokenManager.MatchAndRemove(TokenType.EQUALEQUAL);
+									op = Operations.EQ;
+									if (operation.isEmpty()) {
+										operation = tokenManager.MatchAndRemove(TokenType.GREATERTHAN);
+										op = Operations.GT;
+										if (operation.isEmpty()) {
+											operation = tokenManager.MatchAndRemove(TokenType.GREATERTHANOREQUALTO);
+											op = Operations.GE;
+											if (operation.isEmpty()) {
+												return left;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					
+				}
+				Optional<Node> right  = ParseTerm();
+				left =  Optional.of(new OperationNode(left.get(), op, right));
+				
+				
+				
+			} while (true);
+			
+			}
+		
+		/*
+		 * The ParseTerm method
+		 * First call ParseFactor 
+		 * then check if its a multiply or divide or modulus token then if its neither return left
+		 * meaning its just a factor : A factor is a number or (expression)
+		 */
+		Optional<Node> ParseTerm() throws Exception{
+			Optional<Node> left = ParseFactor();
+			Operations op;
+			do {
+				
+				Optional<Token> operation = tokenManager.MatchAndRemove(TokenType.MULTIPLY);
+				op = Operations.MULTIPLY;
+				if(operation.isEmpty()) {
+				operation = tokenManager.MatchAndRemove(TokenType.DIVIDE);
+				op = Operations.DIVIDE;
+					if(operation.isEmpty()) {
+						operation = tokenManager.MatchAndRemove(TokenType.MODULUS);
+						op = Operations.MODULO;
+						if (operation.isEmpty()) {
+							return left;
+						}
+					}
+				}
+				Optional<Node> right  = ParseTerm();
+				left = Optional.of(new OperationNode(left.get(),op,right));
+				
+			} while (true);
+			
+		
+		}
+		
+		
+		/*
+		 * The ParseFactor method 
+		 * Checks for if there is a number or expression present and returns an exception if its not
+		 */
+		Optional<Node> ParseFactor() throws Exception{
+			
+			Optional<Token> number = tokenManager.MatchAndRemove(TokenType.NUMBER);
+			if (number.isPresent()) {
+				return Optional.of(new ConstantNode(number.get().getTokenValue()));
+			} 
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isPresent()) {
+				Optional<Node> expression = ParseExpression();
+				if(expression == null) {
+					throw new Exception("Error: ParseExpression Failed, Check the ParseExpression Method");
+				}
+				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+					throw new Exception("Missing right paren");
+				}
+				return expression;
+			}
+			
+			
+			
+			return Optional.empty();
+		}
+		
+		/*
+		 * The ParseExponenent method
+		 * calls ParseFactor then checks for the exponent token
+		 * then creates an OperationNode 
+		 */
+		Optional<Node> ParseExponent() throws Exception{
+			
+			Optional<Node> left = ParseFactor();
+			
+			if (left.isEmpty()) {
+				throw new Exception("Missing Factor");
+			}
+			Optional<Token> Exponent = tokenManager.MatchAndRemove(TokenType.EXPONENT);
+			Operations Op = Operations.EXPONENT;
+			if(Exponent.isEmpty()) {
+				throw new Exception("Missing Exponent Declaration");
+			}
+			Optional<Node> right =  Optional.of(new OperationNode(left.get(), Op, ParseFactor()));
+			return right;
+		}
+		
+		/*
+		 * The ParsePostCrement method
+		 * handles post increment and decrement tokens then creates 
+		 * an operation Node
+		 */
+		Optional<Node> ParsePostCrement() throws Exception{
+			
+			Optional<Node> ParseBottomLevel = ParseBottomLevel();
+			Optional<Token> PostCrement = tokenManager.MatchAndRemove(TokenType.PLUSPLUS);
+			Operations Op = Operations.POSTINC;
+			if (PostCrement.isEmpty()) {
+				Op = Operations.POSTDEC;
+				PostCrement = tokenManager.MatchAndRemove(TokenType.MINUSMINUS);
+				if (PostCrement.isEmpty()) {
+					return ParseBottomLevel();
+				}
+			}
+			ParseBottomLevel = Optional.of(new OperationNode(ParseBottomLevel.get(), Op));
+			return ParseBottomLevel;
+		}
+		
+		/*
+		 * The ParseAnd method Handles patterns with and tokens
+		 * first it calls ParseArrayMemberShip
+		 * then looks for an and token then creates an Operation node
+		 * returns ParseArrayMemberShip() if there is no and token
+		 * 
+		 */
+		Optional<Node> ParseAnd() throws Exception{
+			
+		Optional<Node> left = ParseArrayMemberShip();
+		
+		do {
+			
+			Optional<Token> and = tokenManager.MatchAndRemove(TokenType.AND);
+			if(and.isEmpty()) {
+				return left;
+			} 
+			left =  Optional.of(new OperationNode(left.get(), Operations.AND, ParseExpression()));
+			return left;
+			
+		}while(true);
+			
+		}
+		
+		/*
+		 * The ParseOr method Handles patterns with Or tokens
+		 * first it calls ParseAnd
+		 * then looks for an Or token then creates an Operation node
+		 * returns ParseAnd()if there is no or token
+		 * 
+		 */
+		Optional<Node> ParseOr() throws Exception {
+			
+			Optional<Node> left = ParseAnd();
+			
+			do {
+				Optional<Token> Or = tokenManager.MatchAndRemove(TokenType.OR);
+				
+				if (Or.isEmpty()) {
+					return left;
+				}
+				left = Optional.of(new OperationNode(left.get(), Operations.OR, ParseExpression()));
+				return left;
+				
+			} while(true);
+			
+			
+		}
+		/*
+		 * The ParseMatch method Handles patterns with Match tokens
+		 * first it calls ParseExpression
+		 * then looks for a Match or not Match token then creates an Operation node
+		 * returns ParseExpression()if there is no match tokens
+		 * 
+		 */
+		Optional<Node> ParseMatch() throws Exception{
+			
+			Optional<Node> expression = ParseExpression();
+			
+			if (expression.isEmpty()) { return expression;}
+			
+			Optional<Token> Match = tokenManager.MatchAndRemove(TokenType.MATCH);
+			Operations Op = Operations.MATCH;
+			if (Match.isEmpty()) {
+				Match = tokenManager.MatchAndRemove(TokenType.NOTMATCH);
+				if(Match.isEmpty()) {
+					return expression;
+				}
+			}
+			expression = Optional.of(new OperationNode(expression.get(), Op, ParseExpression()));
+			return expression;
+		}
+		/*
+		 * The ParseOperation method Handles Assignment tokens
+		 * first calls ParseTernary then checks for the specified tokens
+		 * then uses the left and right ParseTernaryCalls and creates an assignmentNode
+		 * returns ParseBottomLevel() if no assignment operation tokens were found 
+		 * 
+		 */
+			public Optional<Node> ParseOperation() throws Exception {
+				
+				Optional<Node> left = ParseTernary();
+				Optional<Token> Operation = tokenManager.MatchAndRemove(TokenType.PLUSEQUAL);
+				
+				Operations Op = Operations.ADD;
+				if (Operation.isEmpty()) {
+					Op = Operations.SUBTRACT;
+					Operation = tokenManager.MatchAndRemove(TokenType.MINUSEQUAL);
+					if (Operation.isEmpty()) {
+						Op = Operations.DIVIDE;
+						Operation = tokenManager.MatchAndRemove(TokenType.DIVIDEEQUAL);
+					if(Operation.isEmpty()) {
+						Op = Operations.MULTIPLY;
+						Operation = tokenManager.MatchAndRemove(TokenType.MULTIPLYEQUAL);
+					if(Operation.isEmpty()) {
+						Op = Operations.EXPONENT;
+					    Operation = tokenManager.MatchAndRemove(TokenType.EXPONENTEQUAL);	
+					if(Operation.isEmpty()) {
+						Op = Operations.MODULO;
+						Operation = tokenManager.MatchAndRemove(TokenType.MODULUSEQUAL);	
+					if (Operation.isEmpty()) {
+						Op = Operations.EQ;
+						Operation = tokenManager.MatchAndRemove(TokenType.EQUAL);	
+						if (Operation.isEmpty()) {
+							return ParseBottomLevel();
+						}
+						}
+					}
+					}
+					}
+					}
+					
+				}
+				Optional<Node> right = ParseTernary();
+				OperationNode opNode = new OperationNode(left.get(),Op,right);
+				AssignmentNode assingmentNode = new AssignmentNode(left.get(),opNode);
+				return Optional.of(assingmentNode);
+			}
+		
 		Optional<Node>ParseBottomLevel() throws Exception{
 			
 			Optional<Node> parseOp;
@@ -232,16 +600,15 @@
 			}else if(tokenManager.MatchAndRemove(TokenType.MINUSMINUS).isPresent()) {
 				parseOp = ParseOperation();
 				return Optional.of(new OperationNode(parseOp, Operations.PREDEC));
-			} else {
+			} 
+			else {
 				return ParseLValue();
 			}
 			
 			
 
 		}
-		/*
-		 * 
-		 * 		 */
+		
 		Optional<Node> ParseLValue() throws Exception{
 			//DOLLAR + ParseBottomLevel()  OperationNode(value, DOLLAR)
 			
@@ -256,82 +623,21 @@
 				 if ( tokenManager.MatchAndRemove(TokenType.LEFTBRACKET).isPresent()) {
 					Optional<Node> expressionIndex = ParseOperation();
 					Optional<Token> rightBracket = tokenManager.MatchAndRemove(TokenType.RIGHTBRACKET);
-					if (rightBracket.isPresent()) {
+					if (rightBracket.isEmpty()) {
+						throw new Exception("Missing Right Bracket");
+					}
 						return Optional.of(new VariableReferenceNode(matchedWordToken.get().getTokenValue(), expressionIndex));
-						}
+						
 				 }else {
 					 //WORD (and no OPENARRAY)  VariableReferenceNode(name)
 					 return Optional.of(new VariableReferenceNode(word));
 				 }
 				}
-			
 					return Optional.empty();
 			
 		}
 		
-		Optional<Node> ParseFactor() throws Exception{
-			
-			Optional<Token> number = tokenManager.MatchAndRemove(TokenType.NUMBER);
-			if (number.isPresent()) {
-			//	return Optional.of(number);
-			} 
-			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isPresent()) {
-				Optional<Node> expression = ParseExpression();
-				if(expression == null) {
-					throw new Exception();
-				}
-				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
-					throw new Exception();
-				}
-			}
-			
-			
-			
-			return Optional.empty();
-		}
-		Optional<Node> ParseTerm() throws Exception{
-			Optional<Node> left = ParseFactor();
-			do {
-				//needs to be an optional of node not token figure out later.
-				Optional<Token>operation = tokenManager.MatchAndRemove(TokenType.MULTIPLY);
-				
-			//	if (operations)
-			} while (true);
-			
-		
-		}
-		
-		Optional<Node> ParseExpression() throws Exception{
-			
-			Optional<Node> left = ParseTerm();
-			do {
-				Optional<Token>operation = tokenManager.MatchAndRemove(TokenType.PLUS);
-				if (operation.isEmpty()) {
-					operation = tokenManager.MatchAndRemove(TokenType.MINUS);
-				}
-				if (operation.isEmpty()){
-					return left;
-				}
-				Optional<Node> right  = ParseTerm();
-			//	Optional<Node> left =  Optional.of(new OperationNode(left, operation, right));
-			} while (true);
-			
-		//	return Optional.empty();
-			}
-		
-		
-		public BlockNode ParseBlock() {
-			
-			return new BlockNode();
-			
-		}
-
-		public Optional<Node> ParseOperation() throws Exception {
-			
-			return ParseBottomLevel();
-			
-		}
-		
-		
 	}
+	
+	
 		

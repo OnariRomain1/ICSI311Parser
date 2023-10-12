@@ -6,7 +6,7 @@ public class EndBlockNode extends Node{
 		this.blockNode = blockNode;
 	}
 	
-	public String ToString() {
-		return "";
+	public String toString() {
+		return "EndBlockNode " + blockNode.toString();
 	}
 }

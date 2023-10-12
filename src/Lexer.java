@@ -69,7 +69,7 @@ public class Lexer {
     
     public void makeTwoCharacterSymbolTokens() {
     	
-    	 twoCharacterSymbolTokens.put(">=", TokenType.PLUSEQUAL);
+    	 twoCharacterSymbolTokens.put(">=", TokenType.GREATERTHANOREQUALTO);
          twoCharacterSymbolTokens.put("++", TokenType.PLUSPLUS);
          twoCharacterSymbolTokens.put("--", TokenType.MINUSMINUS);
          twoCharacterSymbolTokens.put("<=", TokenType.LESSTHANOREQUALTO);
@@ -79,7 +79,7 @@ public class Lexer {
          twoCharacterSymbolTokens.put("%=", TokenType.MODULUSEQUAL);
          twoCharacterSymbolTokens.put("*=", TokenType.MULTIPLYEQUAL);
          twoCharacterSymbolTokens.put("/=", TokenType.DIVIDEEQUAL);
-         twoCharacterSymbolTokens.put("+=  ", TokenType.PLUSEQUAL);
+         twoCharacterSymbolTokens.put("+=", TokenType.PLUSEQUAL);
          twoCharacterSymbolTokens.put("-=", TokenType.MINUSEQUAL);
          twoCharacterSymbolTokens.put("!~", TokenType.NOTMATCH);
          twoCharacterSymbolTokens.put("&&", TokenType.AND);
@@ -97,21 +97,22 @@ public class Lexer {
     	 oneCharacterSymbolTokens.put("(", TokenType.LEFTPARENTHESIS);
     	 oneCharacterSymbolTokens.put(")", TokenType.RIGHTPARENTHESIS);
     	 oneCharacterSymbolTokens.put("$", TokenType.DOLLARSIGN);
-    	 oneCharacterSymbolTokens.put("~ ", TokenType.MATCH);
+    	 oneCharacterSymbolTokens.put("~", TokenType.MATCH);
     	 oneCharacterSymbolTokens.put("=", TokenType.EQUAL);
     	 oneCharacterSymbolTokens.put("<", TokenType.LESSTHAN);
     	 oneCharacterSymbolTokens.put(">", TokenType.GREATERTHAN);
     	 oneCharacterSymbolTokens.put("-", TokenType.MINUS);
     	 oneCharacterSymbolTokens.put("?", TokenType.TERNARYOPERATOR);
-    	 oneCharacterSymbolTokens.put(": ", TokenType.COLON);
-    	 oneCharacterSymbolTokens.put("* ", TokenType.MULTIPLY);
+    	 oneCharacterSymbolTokens.put(":", TokenType.COLON);
+    	 oneCharacterSymbolTokens.put("*", TokenType.MULTIPLY);
     	 oneCharacterSymbolTokens.put("/", TokenType.DIVIDE);
     	 oneCharacterSymbolTokens.put("%", TokenType.MODULUS);
     	 oneCharacterSymbolTokens.put(";", TokenType.SEPARATOR);
     	 oneCharacterSymbolTokens.put("\n", TokenType.SEPARATOR);
-    	 oneCharacterSymbolTokens.put("|", TokenType.OR);
+    	
     	 oneCharacterSymbolTokens.put(",", TokenType.COMMA);
-    	 oneCharacterSymbolTokens.put("`", TokenType.PATTERN);
+    	 oneCharacterSymbolTokens.put("^", TokenType.EXPONENT);
+    	 oneCharacterSymbolTokens.put("+", TokenType.PLUS);
     	 
     	 
     }
@@ -218,7 +219,7 @@ public class Lexer {
             	 
             }
          	currentCharacterPosition = charPosition;
-            currentCharacterPosition++;
+        //    currentCharacterPosition++;
          	
        } 
        else if (ProcessSymbol(currentCharacterPosition) != null) {

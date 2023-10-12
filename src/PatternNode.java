@@ -4,7 +4,7 @@ public class PatternNode extends Node{
 	PatternNode(String value) {
 		this.value = value;
 	}
-	public String ToString(){
-		return value + " ";
+	public String toString(){
+		return "PatternNode(" + value + ")";
 	}
 }

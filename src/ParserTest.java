@@ -113,7 +113,7 @@ public class ParserTest {
 		lexer.Lex();
 		
 	    Parser parser = new Parser(lexer.GetLinkedListTokens());
-	    Optional<Node> result = parser.ParseOperation();
+	    Optional<Node> result = parser.ParseBottomLevel();
 	    assertTrue(result.isPresent()); 
 	    
 	}
@@ -129,23 +129,13 @@ public class ParserTest {
 	    assertTrue(result.isPresent()); 
 	}
 	@Test
-	public void testParseBottomLevelMinusNumber() throws Exception {
-
-		Lexer lexer = new Lexer("-7");
-		lexer.Lex();
-		
-	    Parser parser = new Parser(lexer.GetLinkedListTokens());
-	    Optional<Node> result = parser.ParseOperation();
-	    assertTrue(result.isPresent()); 
-	}
-	@Test
 	public void testParseBottomLevelPattern() throws Exception {
 
 		Lexer lexer = new Lexer("`[abc]`");
 		lexer.Lex();
 		
 	    Parser parser = new Parser(lexer.GetLinkedListTokens());
-	    Optional<Node> result = parser.ParseOperation();
+	    Optional<Node> result = parser.ParseBottomLevel();
 	    assertTrue(result.isPresent()); 
 	}
 	@Test
@@ -155,21 +145,227 @@ public class ParserTest {
 		lexer.Lex();
 		
 	    Parser parser = new Parser(lexer.GetLinkedListTokens());
-	    Optional<Node> result = parser.ParseOperation();
+	    Optional<Node> result = parser.ParseBottomLevel();
 	    assertTrue(result.isPresent());
 	}
 	@Test 
 	public void testParseBottomLevelParenPreInc() throws Exception {
 
+
+
 		Lexer lexer = new Lexer("(++d)");
 		lexer.Lex();
 		
 	    Parser parser = new Parser(lexer.GetLinkedListTokens());
-	    Optional<Node> result = parser.ParseOperation();
+	    Optional<Node> result = parser.ParseBottomLevel();
 	    assertTrue(result.isPresent());
 	}
 	
+	@Test
+	public void ParseFactorTestNumber() throws Exception {
+		
+		Lexer lexer = new Lexer("9");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		Optional<Node> constant = Optional.of(new ConstantNode("9"));
+		String ParseFactor = parser.ParseFactor().get().toString();
+		assertEquals(ParseFactor, constant.get().toString());
+		
+	}
 	
+	/*
+	 * Junits for ParseFactor and ParseExpression
+	 * Add invalid tests later.
+	 */
+	@Test
+	public void ParseFactorTestExpressionPlus() throws Exception {
+		
+		Lexer lexer = new Lexer("(9+2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.ADD,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionMinus() throws Exception {
+		
+		Lexer lexer = new Lexer("(9-2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.SUBTRACT,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionLessThan() throws Exception {
+		
+		Lexer lexer = new Lexer("(9<2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.LT,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionLessThanEqual() throws Exception {
+		
+		Lexer lexer = new Lexer("(9<=2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.LE,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionNotEqual() throws Exception {
+		
+		Lexer lexer = new Lexer("(9!=2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.NE,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionEqualEqual() throws Exception {
+		
+		Lexer lexer = new Lexer("(9==2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.EQ,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionGreaterThanEqual() throws Exception {
+
+		
+		Lexer lexer = new Lexer("(9>=2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.GE,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}
+	@Test
+	public void ParseFactorTestExpressionGreaterThan() throws Exception {
+		
+		Lexer lexer = new Lexer("(9>2)");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.GT,constant2);
+		String ParseFactor = parser.ParseFactor().get().toString();
+	
+		assertEquals(ParseFactor,op.toString());
+		
+	}	
+	
+	
+	
+	@Test
+	public void ParseExponent() throws Exception{
+		
+		Lexer lexer = new Lexer("9^2");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		Optional<Node> parseExponent = parser.ParseExponent();
+		
+		var constant = new ConstantNode("9");
+		Optional<Node> constant2 = Optional.of(new ConstantNode("2"));
+		
+		OperationNode op = new OperationNode(constant, Operations.EXPONENT,constant2);
+		String ParseExponent = parseExponent.get().toString();
+	
+		
+		assertEquals(ParseExponent,op.toString());
+		
+	}
+	
+	@Test
+	public void ParsePostInCrement() throws Exception {
+
+		
+		Lexer lexer = new Lexer("i++");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		Optional<Node> parsePostCrement = parser.ParsePostCrement();
+		
+		var constant = new VariableReferenceNode("a");
+	
+		
+		OperationNode op = new OperationNode(constant,Operations.POSTINC);
+		String parsePostCrementString = parsePostCrement.get().toString();
+
+		assertEquals(parsePostCrementString,op.toString());
+		
+		
+	}
+	@Test
+	public void ParsePostDeCrement() throws Exception {
+		
+		Lexer lexer = new Lexer("i--");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		Optional<Node> parsePostCrement = parser.ParsePostCrement();
+		
+		var constant = new VariableReferenceNode("a");
+	
+		
+		OperationNode op = new OperationNode(constant,Operations.POSTDEC);
+		String parsePostCrementString = parsePostCrement.get().toString();
+
+		assertEquals(parsePostCrementString,op.toString());
+		
+		
+	}	
 	
 	
 }

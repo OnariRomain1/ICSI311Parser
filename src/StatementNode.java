@@ -1,7 +1,7 @@
 
 public abstract class StatementNode extends Node{
 	
-	public String ToString() {
+	public String toString() {
 		return "";
 	}
 }

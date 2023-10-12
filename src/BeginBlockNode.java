@@ -6,9 +6,9 @@ public class BeginBlockNode extends Node {
 		this.blockNode = blockNode;
 	}
 	
-	public String ToString() {
+	public String toString() {
 		
-		return "";
+		return "BeginBlockNode: " + blockNode.toString();
 	}
 
 }

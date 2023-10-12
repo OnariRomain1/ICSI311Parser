@@ -19,7 +19,7 @@ public class FunctionDefinitionNode extends Node{
 		
 	}
 
-	public String ToString() {
+	public String toString() {
 		return "function" + name + "(" + parameters.toString() + ")" + "{" + statementNodes.toString() + "}";
 	}
 	

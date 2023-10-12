@@ -1,7 +1,7 @@
 
 public abstract class Node {
 	
-	public String ToString() {
+	public String toString() {
 		return "";
 	}
 	

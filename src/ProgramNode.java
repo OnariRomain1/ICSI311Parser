@@ -20,7 +20,7 @@ public class ProgramNode extends Node{
 		
 	}
 
-	public String ToString() {
+	public String toString() {
 
 		return functionDefNodes.toString() + startBlocks.toString() + blockNodes.toString()+ endBlocks.toString();
 	}

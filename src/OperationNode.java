@@ -13,6 +13,8 @@ public class OperationNode extends Node{
 		this.left = left;
 		operations = operation;
 	}
+	
+	
 	OperationNode(Optional<Node> right, Operations operation){
 		this.right = right;
 		operations = operation;
@@ -24,7 +26,27 @@ public class OperationNode extends Node{
 	}
 
 	public String toString() {
-		return "";
+		
+		if(right == null) {
+			return "leftNode(" +left.toString() +")"+ " operation(" + operations.toString()+")";
+			
+		} else {
+			return "leftNode(" +left.toString() +")"+ " operation(" + operations.toString()+")" + " OptionalRightNode(" + right.toString()+")";
+		}
+		
+	
+	}
+	
+	Node getLeftNode() {
+		return left;
+	}
+	
+	Optional<Node> GetRightNode(){
+		return right;
+	}
+	
+	Operations getOperations() {
+		return operations;
 	}
 
 	
