@@ -59,7 +59,7 @@ public class ParserTest {
     }
 
 	@Test
-	public void testParseActionBegin() {
+	public void testParseActionBegin() throws Exception {
 		
 		Lexer lexer = new Lexer("BEGIN{}");
 		lexer.Lex();
@@ -76,7 +76,7 @@ public class ParserTest {
 		
 	}
 	@Test
-	public void testParseActionEnd() {
+	public void testParseActionEnd() throws Exception {
 		
 		Lexer lexer = new Lexer("END{}");
 		lexer.Lex();
@@ -91,7 +91,7 @@ public class ParserTest {
 	 
 	}
 	@Test
-	public void testParseActionNoKeyWord() {
+	public void testParseActionNoKeyWord() throws Exception {
 		
 		Lexer lexer = new Lexer("/* statements */");
 		lexer.Lex();

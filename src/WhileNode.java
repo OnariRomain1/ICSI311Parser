@@ -1,15 +1,15 @@
-import java.util.List;
 
-public class WhileNode extends Node {
+public class WhileNode extends StatementNode{
 	
-	public Node expression;
-	public List<StatementNode> statements;
+	Node Condition;
+	BlockNode statements;
 	
-	public String ToString() {
-		return ""; 
+	WhileNode(Node condition, BlockNode statement){
+		Condition = condition;
+		statements = statement;
 	}
-	
-	WhileNode(){
-		
+	//change this later
+	public String toString() {
+		return "";
 	}
 }

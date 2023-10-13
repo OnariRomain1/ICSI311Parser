@@ -12,6 +12,7 @@
 			tokenManager = new TokenManager(tokenStream);
 			programNode = new ProgramNode();
 		}
+		
 		/*
 		 * Accessor Methods
 		 */
@@ -24,25 +25,55 @@
 			return programNode;
 		}
 		
-
-		public BlockNode ParseBlock() {
-			
-			return new BlockNode();
-			
-		}
 		
 		/*
+		 * ParseBlock Handles either the case of a multi-line Block
+		 * or a single line block.
+		 * look for a left curly brace token 
+		 * for single line: call new function Parse Statement
+		 * add whats returned from parseStatement to BlockNodes statement list
+		 * dont forget to call AccepSeparators
+		 */
+		public BlockNode ParseBlock() throws Exception {
+			
+			Optional<Token> LeftCurlyBracket = tokenManager.MatchAndRemove(TokenType.LEFTCURLYBRACKET);
+		
+		//First im checking for a curly Bracket 
+			if (LeftCurlyBracket.isPresent()) {
+				//then im using a do while loop to keep checking for statements, then im adding them to the blockNodes linkedList
+				do {
+					//this is checking for Separators 
+					if (AcceptSeparators()) {
+						
+				programNode.blockNodes.add(ParseStatement());
+				//then im checking for a right curly Bracke and checking if the token is missng and throwing an exception if it is
+				Optional<Token> RightCurlyBracket = tokenManager.MatchAndRemove(TokenType.RIGHTCURLYBRACKET);
+				if (RightCurlyBracket.isEmpty()) {
+					throw new Exception("Missing Right curly Bracket token");
+				}
+				
+					}
+				}
+				while(true);
+				
+			} else {
+				throw new Exception("Missing Left Curly Bracket token");
+			}
+			
+			
+		
+			
+		}
+		
+		
 		public BlockNode ParseStatement() {
 		
-			Optional<Token> curlyBrace = tokenManager.MatchAndRemove(TokenType.LEFTCURLYBRACKET);
 			
-			if (curlyBrace.isPresent()) {
-				
-			}
+			
 			return new BlockNode();
 		}
 		
-		*/
+		
 		
 		/*
 		 * The AcceptSeperators Method
@@ -108,7 +139,7 @@
 		 * Checks for the begin or end keyword and creates and adds a block node to the program node 
 		 * otherwise calls parseOperation and adds that block to the programNode.
 		 */
-		public boolean ParseAction(ProgramNode programNode) {
+		public boolean ParseAction(ProgramNode programNode) throws Exception {
 			
 			 Optional<Token> endKeyword = tokenManager.MatchAndRemove(TokenType.END);
 			 Optional<Token> beginKeyword = tokenManager.MatchAndRemove(TokenType.BEGIN);
