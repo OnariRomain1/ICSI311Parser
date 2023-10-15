@@ -1,15 +1,15 @@
 
 public class WhileNode extends StatementNode{
 	
-	Node Condition;
-	BlockNode statements;
+	Node condition;
+	BlockNode statement;
 	
 	WhileNode(Node condition, BlockNode statement){
-		Condition = condition;
-		statements = statement;
+		this.condition = condition;
+		this.statement = statement;
 	}
 	//change this later
 	public String toString() {
-		return "";
+		return "WhileNode (" + condition.toString() +") {" + statement.toString() +"}"; 
 	}
 }

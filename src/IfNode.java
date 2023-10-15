@@ -1,21 +1,26 @@
+import java.util.Optional;
 
 public class IfNode extends Node{
 	
 	Node condition;
 	BlockNode statements;
-	IfNode next;;
+	Optional<IfNode> next;
 	
-	IfNode(Node condition, BlockNode statements ){
+	IfNode(Node condition, BlockNode statements){
 		this.condition = condition;
 		this.statements = statements;
 		
 	}
+	IfNode(BlockNode statements){
+		
+		this.statements = statements;
+	}
 	
-	IfNode getNext() {
+	Optional<IfNode> getNext() {
 		return next;
 	}
 	
-	void setNext(IfNode next){
+	void setNext(Optional<IfNode> next){
 		this.next = next;
 	}
 	public String toString() {

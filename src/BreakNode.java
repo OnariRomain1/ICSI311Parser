@@ -1,7 +1,7 @@
 
-public class BreakNode extends Node{
+public class BreakNode extends BlockNode{
 	
 	public String toString() {
-		return "";
+		return "BREAK";
 	}
 }

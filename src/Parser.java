@@ -45,7 +45,7 @@
 					//this is checking for Separators 
 					if (AcceptSeparators()) {
 						
-				programNode.blockNodes.add(ParseStatement());
+				programNode.blockNodes.add((BlockNode) ParseStatement());
 				//then im checking for a right curly Bracke and checking if the token is missng and throwing an exception if it is
 				Optional<Token> RightCurlyBracket = tokenManager.MatchAndRemove(TokenType.RIGHTCURLYBRACKET);
 				if (RightCurlyBracket.isEmpty()) {
@@ -65,15 +65,267 @@
 			
 		}
 		
-		
-		public BlockNode ParseStatement() {
-		
+		/*
+		 * Checking for the statement types and returning the first one that succeeds
+		 * Dont forget ForEach 
+		 */
+		public Node ParseStatement() throws Exception {
+			
+			if (tokenManager.MatchAndRemove(TokenType.CONTINUE).isPresent()) {
+				return ParseContinue();
+			} 
+			else if (tokenManager.MatchAndRemove(TokenType.BREAK).isPresent()) {
+				return ParseBreak();
+			}
+			else if (tokenManager.MatchAndRemove(TokenType.IF).isPresent()) {
+				return ParseIf().get();
+			} 
+			else if (tokenManager.MatchAndRemove(TokenType.FOR).isPresent()) {
+			
+				if (tokenManager.peek(2).get().getTokenType() == TokenType.IN) {
+					
+					return ParseForEach().get();
+					
+				}
+				return ParseFor().get();
+			}
+			else if (tokenManager.MatchAndRemove(TokenType.DELETE).isPresent()) {
+				 return ParseDelete().get();
+			}
+			else if (tokenManager.MatchAndRemove(TokenType.WHILE).isPresent()) {
+				return ParseWhile().get();
+			}
+			else if (tokenManager.MatchAndRemove(TokenType.RETURN).isPresent()) {
+				return ParseReturn().get();
+			}
+			else if (tokenManager.MatchAndRemove(TokenType.DO).isPresent()) {
+				 return ParseDoWhile().get();
+			} else {
+				throw new Exception("Invalid Statement Type");
+			}
 			
 			
-			return new BlockNode();
 		}
 		
+		BlockNode ParseContinue(){
+			
+			return new ContinueNode();
+			
+		}
 		
+		BlockNode ParseBreak() {
+			return new BreakNode();
+		}
+		
+		/*
+		 * This is the ParseIf Method
+		 * So far im checking for left paren token
+		 * then calling ParseOperation which is representing the condition in if statements
+		 * then checking for the closing right paren
+		 * then calling parseBlock which is dealing with the statements that
+		 * are within the Curly Braces
+		 * Then im using a  while loop to check for else / else if statements
+
+		 */
+		Optional<IfNode> ParseIf() throws Exception{
+			
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid If statement: Missing Left Paranthesis");
+			} 
+			Optional<Node> condition = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid If statement: Missing Right Paranthesis");
+			} 
+			
+			BlockNode statements = ParseBlock();
+			IfNode parseIfNode = new IfNode(condition.get(), statements);
+	
+			
+			//first im checking for an else token 
+			while (tokenManager.MatchAndRemove(TokenType.ELSE).isPresent()){
+				
+				if (tokenManager.MatchAndRemove(TokenType.IF).isPresent()){
+					//im recursively calling my ParseIf to get the conditon and Block statements
+					
+					Optional<IfNode> nextIf = ParseIf();
+					//then im setting parseIfNodes Optional next to ParseIf
+					
+					 parseIfNode.setNext(nextIf);
+					
+				} else { 
+			//if there is no if token im calling parse Block to finish the else statement then creating the if
+				statements = ParseBlock();
+				parseIfNode.setNext(Optional.of(new IfNode(statements)));
+				}
+			} 
+			//this ifNode is for statements that don't have an else if but it is accounting for an else token 
+			 
+			 return Optional.of(parseIfNode);
+			} 
+			
+
+		
+		Optional<ForEachNode> ParseForEach() throws Exception{
+			
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid For statement: Missing Left Paranthesis");
+			} 
+			
+			Optional<Node> Initialization = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.IN).isEmpty()) {
+				throw new Exception("Invalid ForEach Statement: Missing In token");
+				
+			}
+			
+			Optional<Node> array = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid For statement: Missing Right Paranthesis");
+			} 
+			
+			BlockNode statement = ParseBlock();
+			ForEachNode forEachNode = new ForEachNode(Initialization.get(),array.get(),statement);
+			return Optional.of(forEachNode);
+			
+			
+		}
+		/*
+		 * Currently struggling to figure out how to implement ForEach
+		 */
+		//Add comments and do testing :10-14-23 (1:59pm)
+		Optional<ForNode> ParseFor() throws Exception{
+			
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid For statement: Missing Left Paranthesis");
+			} 
+			
+			Optional<Node> initialization = ParseOperation();
+		
+			if (tokenManager.MatchAndRemove(TokenType.SEMICOLON).isEmpty()) {
+				throw new Exception("Missing semicolon inside for loop");
+			}
+			
+			Optional<Node> condition = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.SEMICOLON).isEmpty()) {
+				throw new Exception("Missing semicolon inside for loop");
+			}
+			
+
+			Optional<Node> increment = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid For statement: Missing Right Paranthesis");
+			} 
+			
+			BlockNode ParseBlock = ParseBlock();
+			ForNode forNode = new ForNode(initialization.get(),condition.get(),increment.get(),ParseBlock);
+			
+			
+			return Optional.of(forNode);
+		}
+		Optional<WhileNode> ParseWhile() throws Exception{
+			
+			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid While statement: Missing Left Paranthesis");
+			} 
+			
+			Optional<Node> condition = ParseOperation();
+			
+			if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()){
+				throw new Exception("Invalid While statement: Missing Right Paranthesis");
+			} 
+			
+			BlockNode Statements = ParseBlock();
+			WhileNode whileNode = new WhileNode(condition.get(), Statements);
+			
+			
+			return Optional.of(whileNode);
+		}
+		
+		Optional<DoWhileNode> ParseDoWhile() throws Exception{
+			
+			
+			BlockNode Statements = ParseBlock();
+			
+			if(tokenManager.MatchAndRemove(TokenType.WHILE).isEmpty()) {
+				throw new Exception("Invalid DoWhile statement: Missing While token");
+			}
+			if(tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()) {
+				throw new Exception("Invalid DoWhile statement: Missing Left Paranthesis");
+			}
+			
+			Optional<Node> condition = ParseOperation();
+			
+			if(tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+				throw new Exception("Invalid DoWhile statement: Missing Right Paranthesis");
+			}
+			
+			DoWhileNode doWhileNode = new DoWhileNode(Statements, condition.get());
+			return Optional.of(doWhileNode);
+		}
+
+		Optional<DeleteNode> ParseDelete() throws Exception{
+			
+			//im pretty sure its just calling ParseOperation then 
+			//returning the ParseDeleteNOde with the the value from ParseOperation.
+			
+			 Optional<Node> array = ParseLValue();
+
+			    return Optional.of(new DeleteNode(array.get()));
+		}
+		Optional<ReturnNode> ParseReturn() throws Exception{
+			
+			Optional<Node> expression = ParseOperation();
+			ReturnNode returnNode= new ReturnNode(expression.get());
+			return Optional.of(returnNode);
+			
+		}
+		
+		Optional<FunctionCallNode> ParseFunctionCall() throws Exception{
+			
+			Optional<Token> FunctionName = tokenManager.MatchAndRemove(TokenType.WORD);
+			if (FunctionName.isPresent()) {
+				String Name = FunctionName.get().getTokenValue();
+				if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()) {
+					throw new Exception("Invalid Function Call Missing Left Parenthesis.");
+				}
+				
+				var parametersList = new LinkedList<Node>();
+				Optional<Node> parameter = ParseOperation();
+
+				if (parameter.isEmpty()) {
+					
+					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
+					}
+					FunctionCallNode functionCall = new FunctionCallNode(Name);
+					
+				}
+				
+				while (parameter.isPresent()) {
+					parametersList.add(parameter.get());
+					
+					if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
+				        parameter = ParseOperation();
+					} else {
+						break;
+					}
+					
+				}
+				
+				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+					throw new Exception("Invalid Function Call Missing Right Parenthesis.");
+				}
+				FunctionCallNode functionCall = new FunctionCallNode(Name, parametersList);
+				return Optional.of(functionCall);
+			}
+			return Optional.empty();
+		
+			
+		}
 		
 		/*
 		 * The AcceptSeperators Method
@@ -633,10 +885,18 @@
 				return Optional.of(new OperationNode(parseOp, Operations.PREDEC));
 			} 
 			else {
-				return ParseLValue();
+				
+				Optional<FunctionCallNode> functionCall = ParseFunctionCall();
+				/*
+				 * figure out how to call this properly
+				 if (functionCall.isPresent()) {
+						return functionCall.get();
+				 }
+				*/
+				 return ParseLValue();
 			}
 			
-			
+		
 
 		}
 		

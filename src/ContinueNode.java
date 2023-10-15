@@ -1,7 +1,7 @@
 
-public class ContinueNode extends Node{
+public class ContinueNode extends BlockNode{
 
 	public String toString(){
-		return "";
+		return "CONTINUE";
 	}
 }
