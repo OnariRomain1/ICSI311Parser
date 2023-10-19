@@ -1,3 +1,4 @@
+
 import java.util.Optional;
 
 public class VariableReferenceNode extends Node{
@@ -6,7 +7,7 @@ public class VariableReferenceNode extends Node{
 	Optional<Node> node;
 	
 	VariableReferenceNode(String name){
-		name = variableName;
+		variableName = name;
 	}
 	VariableReferenceNode(String Variablename, Optional<Node> index){
 		variableName = Variablename;

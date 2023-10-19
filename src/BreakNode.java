@@ -1,5 +1,6 @@
 
-public class BreakNode extends BlockNode{
+
+public class BreakNode extends StatementNode{
 	
 	public String toString() {
 		return "BREAK";

@@ -140,8 +140,11 @@ public class Lexer {
         else if (currentChar == ' ' || currentChar == '\t' ){
             currentCharacterPosition++;
         // if currentChar a comment or carriage return skip to next line    
-        }  else if (currentChar == '#' || currentChar == '\r'){
+        }  else if (currentChar == '#'){
             lineNumber++;
+        }
+        else if (currentChar == '\r'){
+        	currentCharacterPosition++;
         }
         // if current character is a seperator create a seperator token; add the seperator token to the tokens linkedList, then increment currentchar and linenumber.
         /*
@@ -156,6 +159,7 @@ public class Lexer {
               tokensLinkedList.add(seperatorToken);
               currentCharacterPosition++; 
               lineNumber++;
+              linePosition = 0;
           
             
         // if " create String Literal token then add StringLiteral to the linkedList 

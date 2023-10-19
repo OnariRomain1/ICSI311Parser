@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -20,7 +21,24 @@ public class FunctionDefinitionNode extends Node{
 	}
 
 	public String toString() {
-		return "function" + name + "(" + parameters.toString() + ")" + "{" + statementNodes.toString() + "}";
+		
+		StringBuilder FunctionDefBuilder = new StringBuilder();
+		
+		if (!parameters.isEmpty()) {
+			
+	        for (String parameter : parameters) {
+	        	FunctionDefBuilder.append(parameter).append(", ");
+	        }
+	        FunctionDefBuilder.setLength(FunctionDefBuilder.length() - 2);
+	    }
+		
+		for(StatementNode statementNode: statementNodes) {
+			FunctionDefBuilder.append(statementNode.toString() + "\n");
+	
+		}
+		
+		return name + FunctionDefBuilder.toString();
+		
 	}
 	
 	

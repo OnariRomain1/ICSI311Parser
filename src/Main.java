@@ -1,8 +1,4 @@
 
-/*
- * When I face a problem that I find to be a challenge, I try to frame it in
-terms of “If I had X helper function(s), I could do this”
- */
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +7,7 @@ import java.util.Scanner;
 
 public class Main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		Path myPath;
 		String file;
@@ -42,6 +38,10 @@ public class Main {
             for (Token token : lexer.GetLinkedListTokens()) {
                 System.out.println(token.toString());
             }
+            
+            Parser parser = new Parser(lexer.GetLinkedListTokens());
+            
+            parser.ParseBlock();
              
              
     

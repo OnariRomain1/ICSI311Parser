@@ -1,5 +1,6 @@
 
-public class ContinueNode extends BlockNode{
+
+public class ContinueNode extends StatementNode{
 
 	public String toString(){
 		return "CONTINUE";

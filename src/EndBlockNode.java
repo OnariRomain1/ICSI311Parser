@@ -7,6 +7,6 @@ public class EndBlockNode extends Node{
 	}
 	
 	public String toString() {
-		return "EndBlockNode " + blockNode.toString();
+		return "EndBlockNode( " + blockNode.toString() +")";
 	}
 }

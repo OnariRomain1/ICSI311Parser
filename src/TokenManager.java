@@ -36,12 +36,12 @@ public class TokenManager {
 	 * remove that token from the list and return it. 
 	 */
 	Optional<Token> MatchAndRemove(TokenType t){
+
+		if(tokenStream.isEmpty()) {
+			return Optional.empty();
+		}		
 		
 		Token head = tokenStream.getFirst();
-		
-		if(head == null) {
-			return Optional.empty();
-		}
 
 		if(head.getTokenType().equals(t)) {
 			return Optional.ofNullable(tokenStream.pop());

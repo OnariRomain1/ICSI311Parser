@@ -10,6 +10,19 @@ public class ParserTest {
 
 	
 	@Test
+	public void ParseBlockBreakTest() throws Exception{
+
+		Lexer lexer = new Lexer("{break}");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		BlockNode ParsedBlock = parser.ParseBlock();
+		assertEquals(ParsedBlock.statementNodes.getFirst().toString(), "BREAK");
+		
+		
+	}
+	
+	
+	@Test
 	public void AcceptSeparators() {
 		
 		Lexer lexer = new Lexer(";abcd");
@@ -42,6 +55,7 @@ public class ParserTest {
         assertEquals(2, programNode.getFunctionDefNodes().get(0).getParameters().size()); 
         
     }
+    
 	
 	@Test
 	public void testParseFunction_NoValidFunctionDefinition() throws Exception {
@@ -366,6 +380,8 @@ public class ParserTest {
 		
 		
 	}	
+	
+	
 	
 	
 }

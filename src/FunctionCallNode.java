@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,11 +20,20 @@ public class FunctionCallNode extends StatementNode{
 	
 	public String toString() {
 		
-		if (parameters.isEmpty()){
+		StringBuilder parametersBuilder = new StringBuilder();
+		
+		if (parameters.isEmpty()) {
 			return FunctionName + "()";
-		} else {
-		return FunctionName + "(" + parameters.toString() +")";
 		}
+		for(Node parameter: parameters) {
+			 parametersBuilder.append(parameter.toString());
+		     parametersBuilder.append(", ");
+		}
+		
+		 parametersBuilder.setLength(parametersBuilder.length() - 2);	
+			
+		return FunctionName + "(" + parametersBuilder.toString() +")";
+		
 	}
 	
 }
