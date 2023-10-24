@@ -38,10 +38,11 @@ public class Main {
             for (Token token : lexer.GetLinkedListTokens()) {
                 System.out.println(token.toString());
             }
+
             
-            Parser parser = new Parser(lexer.GetLinkedListTokens());
-            
-            parser.ParseBlock();
+          //  Parser parser = new Parser(lexer.GetLinkedListTokens());
+
+
              
              
     

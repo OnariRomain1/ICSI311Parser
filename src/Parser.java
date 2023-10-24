@@ -67,13 +67,11 @@
 			    }
 			
 		}
-		
 		/*
 		 * Checking for the statement types and returning the first one that succeeds
 		 * 
 		 */
 		public StatementNode ParseStatement() throws Exception {
-			
 			if (tokenManager.MatchAndRemove(TokenType.CONTINUE).isPresent()) {
 				return ParseContinue();
 			} 
@@ -106,16 +104,12 @@
 			} else {
 				throw new Exception("Invalid Statement Type");
 			}
-			
-			
 		}
 		
 		StatementNode ParseContinue(){
-			
 			return new ContinueNode();
 			
 		}
-		
 		StatementNode ParseBreak() {
 			return new BreakNode();
 		}
@@ -162,8 +156,7 @@
 				parseIfNode.setNext(Optional.of(new IfNode(statements)));
 				}
 			} 
-			//this ifNode is for statements that don't have an else if but it is accounting for an else token 
-			 
+			//this ifNode is for statements that don't have an else if but it is accounting for an else token
 			 return Optional.of(parseIfNode);
 			} 
 			
@@ -295,6 +288,7 @@
 			return Optional.of(returnNode);
 			
 		}
+
 		/*
 		 * This method deals with functionCalls 
 		 * gets the functions name which is a word token 
@@ -302,40 +296,54 @@
 		 * and creates the respective FunctionCallNode then returns it
 		 */
 		Optional<FunctionCallNode> ParseFunctionCall() throws Exception{
-			
+
 			Optional<Token> FunctionName = tokenManager.MatchAndRemove(TokenType.WORD);
 			if (FunctionName.isPresent()) {
 				String Name = FunctionName.get().getTokenValue();
+				var parametersList = new LinkedList<Node>();
+				Optional<Node> parameter;
+				//im now realizing that this wont work since each one has a different thing that gets call afterwards but then again it might just be looking for the name rather we'll see
+
+				if(Name.equals("next") || Name.equals("nextfile") || Name.equals("getline")){
+					FunctionCallNode functionCall = new FunctionCallNode(Name);
+					return Optional.of(functionCall);
+
+				}
+				if (Name.equals("print") || Name.equals("printf") || Name.equals("exit")){
+					parameter = ParseOperation();
+					parametersList.add(parameter.get());
+					FunctionCallNode functionCall = new FunctionCallNode(Name,parametersList);
+					return Optional.of(functionCall);
+				}
+
 				if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()) {
 					throw new Exception("Invalid Function Call Missing Left Parenthesis.");
 				}
-				
-				/*
-				 * Add in the code for parser thats on my macBook
-				 */
-				var parametersList = new LinkedList<Node>();
-				Optional<Node> parameter = ParseOperation();
+
+
+				 parameter = ParseOperation();
 
 				if (parameter.isEmpty()) {
-					
+
 					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
 						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
 					}
+
 					FunctionCallNode functionCall = new FunctionCallNode(Name);
-					
+					return Optional.of(functionCall);
 				}
-				
+
 				while (parameter.isPresent()) {
 					parametersList.add(parameter.get());
-					
+
 					if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
-				        parameter = ParseOperation();
+						parameter = ParseOperation();
 					} else {
 						break;
 					}
-					
+
 				}
-				
+
 				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
 					throw new Exception("Invalid Function Call Missing Right Parenthesis.");
 				}
@@ -343,8 +351,6 @@
 				return Optional.of(functionCall);
 			}
 			return Optional.empty();
-		
-			
 		}
 		
 		/*
@@ -418,8 +424,7 @@
 			 BlockNode blockNode;
 				
 			    if (beginKeyword.isPresent() || endKeyword.isPresent()) {
-			    	
-	
+
 			    	blockNode = ParseBlock();
 			       
 			    	if (beginKeyword.isPresent()) {

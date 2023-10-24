@@ -1,10 +1,12 @@
+import org.junit.Test;
+
 import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import java.util.LinkedList;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Test;
+
 
 public class ParserTest {
 

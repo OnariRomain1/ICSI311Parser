@@ -1,10 +1,18 @@
 
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 
 public class Interpreter {
-	
+
+
+	String file;
+
 	class LineManager{
 		
 		List<String> LineManagerList;
@@ -19,6 +27,16 @@ public class Interpreter {
 		
 		}
 		
+	}
+
+	Interpreter(ProgramNode programNode){
+
+	}
+	Interpreter(ProgramNode programNode, Path file) throws IOException {
+
+		String File = new String(Files.readAllBytes(file));
+		LineManager lineManager = new LineManager();
+
 	}
 	
 

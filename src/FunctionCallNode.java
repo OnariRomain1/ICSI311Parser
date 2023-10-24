@@ -17,7 +17,14 @@ public class FunctionCallNode extends StatementNode{
 		this.parameters = parameters;
 		
 	}
-	
+
+	public String getFunctionName(){
+		return FunctionName;
+	}
+
+	public LinkedList<Node>getParameters(){
+		return parameters;
+	}
 	public String toString() {
 		
 		StringBuilder parametersBuilder = new StringBuilder();

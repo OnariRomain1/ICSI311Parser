@@ -1,3 +1,4 @@
+import javax.swing.text.html.Option;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -29,7 +30,8 @@ public class TokenManager {
 			return Optional.empty();
 		}
 	}
-	
+
+
 	/*
 	 * looks at the head of the list. 
 	 * If the token type of the head is the same as what was passed in, 
@@ -44,6 +46,7 @@ public class TokenManager {
 		Token head = tokenStream.getFirst();
 
 		if(head.getTokenType().equals(t)) {
+
 			return Optional.ofNullable(tokenStream.pop());
 		}else {
 			return Optional.empty();
