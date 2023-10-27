@@ -79,7 +79,11 @@
 				return ParseBreak();
 			}
 			else if (tokenManager.MatchAndRemove(TokenType.IF).isPresent()) {
-				return ParseIf().get();
+				Optional<IfNode> parseIf =  ParseIf();
+				if (parseIf.isPresent()){
+					return parseIf.get();
+				}
+
 			} 
 			else if (tokenManager.MatchAndRemove(TokenType.FOR).isPresent()) {
 			
@@ -104,6 +108,7 @@
 			} else {
 				throw new Exception("Invalid Statement Type");
 			}
+			return null;
 		}
 		
 		StatementNode ParseContinue(){
@@ -295,35 +300,42 @@
 		 * then checks for parameters 
 		 * and creates the respective FunctionCallNode then returns it
 		 */
+
+		//TODO: Properly implement getline, print... and do testing
 		Optional<FunctionCallNode> ParseFunctionCall() throws Exception{
 
 			Optional<Token> FunctionName = tokenManager.MatchAndRemove(TokenType.WORD);
 			if (FunctionName.isPresent()) {
+
 				String Name = FunctionName.get().getTokenValue();
-				var parametersList = new LinkedList<Node>();
-				Optional<Node> parameter;
-				//im now realizing that this wont work since each one has a different thing that gets call afterwards but then again it might just be looking for the name rather we'll see
-
-				if(Name.equals("next") || Name.equals("nextfile") || Name.equals("getline")){
-					FunctionCallNode functionCall = new FunctionCallNode(Name);
-					return Optional.of(functionCall);
-
-				}
-				if (Name.equals("print") || Name.equals("printf") || Name.equals("exit")){
-					parameter = ParseOperation();
-					parametersList.add(parameter.get());
-					FunctionCallNode functionCall = new FunctionCallNode(Name,parametersList);
-					return Optional.of(functionCall);
-				}
+				Optional<LinkedList<Node>> parametersList = Optional.of(new LinkedList<Node>());
 
 				if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()) {
 					throw new Exception("Invalid Function Call Missing Left Parenthesis.");
 				}
 
+				Optional<Node>  parameter = ParseOperation();
 
-				 parameter = ParseOperation();
+				if (parameter.isPresent()) {
+					while (parameter.isPresent()) {
 
-				if (parameter.isEmpty()) {
+						parametersList.get().add(parameter.get());
+						if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
+							parameter = ParseOperation();
+						} else {
+							break;
+						}
+
+					}
+
+					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
+					}
+
+					FunctionCallNode functionCall = new FunctionCallNode(Name, parametersList.get());
+					return Optional.of(functionCall);
+
+				} else {
 
 					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
 						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
@@ -333,22 +345,6 @@
 					return Optional.of(functionCall);
 				}
 
-				while (parameter.isPresent()) {
-					parametersList.add(parameter.get());
-
-					if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
-						parameter = ParseOperation();
-					} else {
-						break;
-					}
-
-				}
-
-				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
-					throw new Exception("Invalid Function Call Missing Right Parenthesis.");
-				}
-				FunctionCallNode functionCall = new FunctionCallNode(Name, parametersList);
-				return Optional.of(functionCall);
 			}
 			return Optional.empty();
 		}

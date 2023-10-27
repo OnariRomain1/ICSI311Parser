@@ -29,18 +29,19 @@ public class FunctionCallNode extends StatementNode{
 		
 		StringBuilder parametersBuilder = new StringBuilder();
 		
-		if (parameters.isEmpty()) {
+		if (parameters == null) {
 			return FunctionName + "()";
+
 		}
 		for(Node parameter: parameters) {
-			 parametersBuilder.append(parameter.toString());
-		     parametersBuilder.append(", ");
+			parametersBuilder.append(parameter.toString());
+			parametersBuilder.append(", ");
 		}
-		
-		 parametersBuilder.setLength(parametersBuilder.length() - 2);	
-			
+
+		parametersBuilder.setLength(parametersBuilder.length() - 2);
 		return FunctionName + "(" + parametersBuilder.toString() +")";
-		
+
+
 	}
 	
 }
