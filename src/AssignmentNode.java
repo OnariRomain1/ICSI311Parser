@@ -12,7 +12,10 @@ public class AssignmentNode extends Node{
 	Node getTarget(){
 		return target;
 	}
-	
+	Node setTarget(Node target){
+		this.target = target;
+		return target;
+	}
 	Node getExpression() {
 		return Expression;
 	}

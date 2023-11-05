@@ -1,6 +1,7 @@
+
 import java.util.Optional;
 
-public class IfNode extends Node{
+public class IfNode extends StatementNode{
 	
 	Node condition;
 	BlockNode statements;
@@ -24,7 +25,10 @@ public class IfNode extends Node{
 		this.next = next;
 	}
 	public String toString() {
-		return "";
+		if (next.isEmpty()) {
+		return "IfNode" + condition.toString() +"{"+ statements.toString() +"}" ;
+		}
+		return "IfNode" + condition.toString() +"{"+ statements.toString() +"}" + next.toString();
 	}
 }
  

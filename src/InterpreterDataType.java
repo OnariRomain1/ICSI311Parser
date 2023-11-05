@@ -1,6 +1,6 @@
 
 
-public class InterpreterDataType {
+public class InterpreterDataType extends Node{
 	
 	String value;
 	
@@ -18,5 +18,8 @@ public class InterpreterDataType {
 			return "InterpreterDataType()";
 		}
 		return "InterpreterDataType(" + value + ")";
+	}
+	public String getValue(){
+		return value;
 	}
 }

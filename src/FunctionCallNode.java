@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,14 +17,31 @@ public class FunctionCallNode extends StatementNode{
 		this.parameters = parameters;
 		
 	}
-	
+
+	public String getFunctionName(){
+		return FunctionName;
+	}
+
+	public LinkedList<Node>getParameters(){
+		return parameters;
+	}
 	public String toString() {
 		
-		if (parameters.isEmpty()){
+		StringBuilder parametersBuilder = new StringBuilder();
+		
+		if (parameters == null) {
 			return FunctionName + "()";
-		} else {
-		return FunctionName + "(" + parameters.toString() +")";
+
 		}
+		for(Node parameter: parameters) {
+			parametersBuilder.append(parameter.toString());
+			parametersBuilder.append(", ");
+		}
+
+		parametersBuilder.setLength(parametersBuilder.length() - 2);
+		return FunctionName + "(" + parametersBuilder.toString() +")";
+
+
 	}
 	
 }

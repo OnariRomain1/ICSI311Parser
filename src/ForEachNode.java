@@ -1,4 +1,5 @@
 
+
 public class ForEachNode extends StatementNode{
 	
 	Node iteration;
@@ -14,4 +15,5 @@ public class ForEachNode extends StatementNode{
 	public String toString() {
 		return "ForEachNode(" + iteration.toString() + "in" + array.toString() +") {" +  statement.toString() + "}";
 	}
+	
 }

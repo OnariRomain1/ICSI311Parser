@@ -1,3 +1,5 @@
+	//TODO: Make helper methods that make my code more readable and easier for debugging
+	//TODO: Do more testing refer to my professors slides for more info on proper Junit tests and writting better coments.
 	import java.util.ArrayList;
 	import java.util.LinkedList;
 	import java.util.List;
@@ -29,48 +31,47 @@
 		/*
 		 * ParseBlock Handles either the case of a multi-line Block
 		 * or a single line block.
-		 * look for a left curly brace token 
+		 * looks for a left curly brace token 
 		 * for single line: call new function Parse Statement
 		 * add whats returned from parseStatement to BlockNodes statement list
 		 * dont forget to call AccepSeparators
 		 */
 		public BlockNode ParseBlock() throws Exception {
-			
-			Optional<Token> LeftCurlyBracket = tokenManager.MatchAndRemove(TokenType.LEFTCURLYBRACKET);
 		
-		//First im checking for a curly Bracket 
-			if (LeftCurlyBracket.isPresent()) {
-				//then im using a do while loop to keep checking for statements, then im adding them to the blockNodes linkedList
-				do {
-					//this is checking for Separators 
-					if (AcceptSeparators()) {
-						
-				programNode.blockNodes.add((BlockNode) ParseStatement());
-				//then im checking for a right curly Bracke and checking if the token is missng and throwing an exception if it is
-				Optional<Token> RightCurlyBracket = tokenManager.MatchAndRemove(TokenType.RIGHTCURLYBRACKET);
-				if (RightCurlyBracket.isEmpty()) {
-					throw new Exception("Missing Right curly Bracket token");
-				}
+	
+			if (tokenManager.MatchAndRemove(TokenType.LEFTCURLYBRACKET).isPresent()) {
 				
-					}
-				}
-				while(true);
+				BlockNode blockNode = new BlockNode();
 				
-			} else {
-				throw new Exception("Missing Left Curly Bracket token");
-			}
+				while (true) {
+					
+		            if (AcceptSeparators()) {
+		                if (tokenManager.MatchAndRemove(TokenType.RIGHTCURLYBRACKET).isPresent()) {
+		                  
+		                    return blockNode;
+		                } else {
+		     
+		                    blockNode.statementNodes.add(ParseStatement());
+		                }
+		            }
 			
 			
-		
+			
+				}
+				}
+			else {
+			     
+			        BlockNode blockNode = new BlockNode();
+			        blockNode.statementNodes.add(ParseStatement());
+			        return blockNode;
+			    }
 			
 		}
-		
 		/*
 		 * Checking for the statement types and returning the first one that succeeds
-		 * Dont forget ForEach 
+		 * 
 		 */
-		public Node ParseStatement() throws Exception {
-			
+		public StatementNode ParseStatement() throws Exception {
 			if (tokenManager.MatchAndRemove(TokenType.CONTINUE).isPresent()) {
 				return ParseContinue();
 			} 
@@ -78,7 +79,11 @@
 				return ParseBreak();
 			}
 			else if (tokenManager.MatchAndRemove(TokenType.IF).isPresent()) {
-				return ParseIf().get();
+				Optional<IfNode> parseIf =  ParseIf();
+				if (parseIf.isPresent()){
+					return parseIf.get();
+				}
+
 			} 
 			else if (tokenManager.MatchAndRemove(TokenType.FOR).isPresent()) {
 			
@@ -103,23 +108,20 @@
 			} else {
 				throw new Exception("Invalid Statement Type");
 			}
-			
-			
+			return null;
 		}
 		
-		BlockNode ParseContinue(){
-			
+		StatementNode ParseContinue(){
 			return new ContinueNode();
 			
 		}
-		
-		BlockNode ParseBreak() {
+		StatementNode ParseBreak() {
 			return new BreakNode();
 		}
 		
 		/*
 		 * This is the ParseIf Method
-		 * So far im checking for left paren token
+		 *checking for left paren token
 		 * then calling ParseOperation which is representing the condition in if statements
 		 * then checking for the closing right paren
 		 * then calling parseBlock which is dealing with the statements that
@@ -142,7 +144,7 @@
 			IfNode parseIfNode = new IfNode(condition.get(), statements);
 	
 			
-			//first im checking for an else token 
+			//while there is an else token
 			while (tokenManager.MatchAndRemove(TokenType.ELSE).isPresent()){
 				
 				if (tokenManager.MatchAndRemove(TokenType.IF).isPresent()){
@@ -154,18 +156,17 @@
 					 parseIfNode.setNext(nextIf);
 					
 				} else { 
-			//if there is no if token im calling parse Block to finish the else statement then creating the if
+			//if there is no if token im calling parse Block to finish the else statement then creating the ifNode
 				statements = ParseBlock();
 				parseIfNode.setNext(Optional.of(new IfNode(statements)));
 				}
 			} 
-			//this ifNode is for statements that don't have an else if but it is accounting for an else token 
-			 
+			//this ifNode is for statements that don't have an else if but it is accounting for an else token
 			 return Optional.of(parseIfNode);
 			} 
 			
 
-		
+	
 		Optional<ForEachNode> ParseForEach() throws Exception{
 			
 			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
@@ -192,9 +193,12 @@
 			
 		}
 		/*
-		 * Currently struggling to figure out how to implement ForEach
+		 * Handles for satements 
+		 * checking for left paren then
+		 * calling ParseOperation for intitialization, conditon, and increment 
+		 * while also checking for the semicolons
+		 * then im creating the ForNode and returning it
 		 */
-		//Add comments and do testing :10-14-23 (1:59pm)
 		Optional<ForNode> ParseFor() throws Exception{
 			
 			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
@@ -226,6 +230,9 @@
 			
 			return Optional.of(forNode);
 		}
+		/*
+		 * The ParseWhile Method handles while statements 
+		 */
 		Optional<WhileNode> ParseWhile() throws Exception{
 			
 			if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()){
@@ -267,15 +274,18 @@
 			return Optional.of(doWhileNode);
 		}
 
+		/*This deals with Delete Statements within the parseBlock
+		 * 
+		 */
 		Optional<DeleteNode> ParseDelete() throws Exception{
-			
-			//im pretty sure its just calling ParseOperation then 
-			//returning the ParseDeleteNOde with the the value from ParseOperation.
 			
 			 Optional<Node> array = ParseLValue();
 
 			    return Optional.of(new DeleteNode(array.get()));
 		}
+		/*
+		 * This deals with return statements within the parseBlock
+		 */
 		Optional<ReturnNode> ParseReturn() throws Exception{
 			
 			Optional<Node> expression = ParseOperation();
@@ -283,48 +293,92 @@
 			return Optional.of(returnNode);
 			
 		}
-		
+
+		/*
+		 * This method deals with functionCalls 
+		 * gets the functions name which is a word token 
+		 * then checks for parameters 
+		 * and creates the respective FunctionCallNode then returns it
+		 */
+
 		Optional<FunctionCallNode> ParseFunctionCall() throws Exception{
-			
+
 			Optional<Token> FunctionName = tokenManager.MatchAndRemove(TokenType.WORD);
 			if (FunctionName.isPresent()) {
+
 				String Name = FunctionName.get().getTokenValue();
+				LinkedList<Node> parametersList = new LinkedList<Node>();
+				Optional<Node>  parameter;
+				if(Name.equals("next")){
+					return Optional.of(new FunctionCallNode(Name));
+				}
+				if (Name.equals("print") || Name.equals("exit") || Name.equals("getline")){
+					parameter = ParseOperation();
+					if (parameter.isPresent()) {
+						parametersList.add(parameter.get());
+						return Optional.of(new FunctionCallNode(Name, parametersList));
+
+					}
+				}
+				if (Name.equals("printf")) {
+
+					parameter = ParseOperation();
+
+					if (parameter.isPresent()) {
+						while (parameter.isPresent()) {
+
+							parametersList.add(parameter.get());
+							if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
+								parameter = ParseOperation();
+							} else {
+								break;
+							}
+
+						}
+						parametersList.add(parameter.get());
+						return Optional.of(new FunctionCallNode(Name, parametersList));
+					}
+				}
 				if (tokenManager.MatchAndRemove(TokenType.LEFTPARENTHESIS).isEmpty()) {
 					throw new Exception("Invalid Function Call Missing Left Parenthesis.");
 				}
-				
-				var parametersList = new LinkedList<Node>();
-				Optional<Node> parameter = ParseOperation();
 
-				if (parameter.isEmpty()) {
-					
+				parameter = ParseOperation();
+
+				if (parameter.isPresent()) {
+
+
+					while (parameter.isPresent()) {
+
+						parametersList.add(parameter.get());
+						if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
+							parameter = ParseOperation();
+						} else {
+							break;
+						}
+
+					}
+
 					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
 						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
 					}
-					FunctionCallNode functionCall = new FunctionCallNode(Name);
-					
-				}
-				
-				while (parameter.isPresent()) {
-					parametersList.add(parameter.get());
-					
-					if (tokenManager.MatchAndRemove(TokenType.COMMA).isPresent()) {
-				        parameter = ParseOperation();
-					} else {
-						break;
+
+
+					FunctionCallNode functionCall = new FunctionCallNode(Name, parametersList);
+					return Optional.of(functionCall);
+
+				} else {
+
+					if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
+						throw new Exception("Invalid Function Call Missing Right Parenthesis.");
 					}
-					
+
+					FunctionCallNode functionCall = new FunctionCallNode(Name);
+					return Optional.of(functionCall);
 				}
-				
-				if (tokenManager.MatchAndRemove(TokenType.RIGHTPARENTHESIS).isEmpty()) {
-					throw new Exception("Invalid Function Call Missing Right Parenthesis.");
-				}
-				FunctionCallNode functionCall = new FunctionCallNode(Name, parametersList);
-				return Optional.of(functionCall);
+
 			}
 			return Optional.empty();
-		
-			
 		}
 		
 		/*
@@ -398,8 +452,7 @@
 			 BlockNode blockNode;
 				
 			    if (beginKeyword.isPresent() || endKeyword.isPresent()) {
-			    	
-	
+
 			    	blockNode = ParseBlock();
 			       
 			    	if (beginKeyword.isPresent()) {
@@ -606,8 +659,9 @@
 					
 				}
 				Optional<Node> right  = ParseTerm();
-				left =  Optional.of(new OperationNode(left.get(), op, right));
+				OperationNode opNode = new OperationNode(left.get(), op, right);
 				
+				return Optional.of(opNode);
 				
 				
 			} while (true);
@@ -640,7 +694,7 @@
 				}
 				Optional<Node> right  = ParseTerm();
 				left = Optional.of(new OperationNode(left.get(),op,right));
-				
+				return left;
 			} while (true);
 			
 		
@@ -886,13 +940,12 @@
 			} 
 			else {
 				
+				
 				Optional<FunctionCallNode> functionCall = ParseFunctionCall();
-				/*
-				 * figure out how to call this properly
-				 if (functionCall.isPresent()) {
-						return functionCall.get();
-				 }
-				*/
+				if (ParseFunctionCall().isPresent()) {
+					return Optional.of(functionCall.get());
+				}
+			
 				 return ParseLValue();
 			}
 			
@@ -910,7 +963,7 @@
 			//WORD + OPENARRAY + ParseOperation() + CLOSEARRAY  VariableReferenceNode(name, index)
 			Optional<Token>matchedWordToken  = tokenManager.MatchAndRemove(TokenType.WORD);
 			if(matchedWordToken.isPresent()) {
-				String word = matchedWordToken.get().getTokenValue();
+				
 				 if ( tokenManager.MatchAndRemove(TokenType.LEFTBRACKET).isPresent()) {
 					Optional<Node> expressionIndex = ParseOperation();
 					Optional<Token> rightBracket = tokenManager.MatchAndRemove(TokenType.RIGHTBRACKET);
@@ -919,16 +972,15 @@
 					}
 						return Optional.of(new VariableReferenceNode(matchedWordToken.get().getTokenValue(), expressionIndex));
 						
-				 }else {
-					 //WORD (and no OPENARRAY)  VariableReferenceNode(name)
-					 return Optional.of(new VariableReferenceNode(word));
 				 }
-				}
-					return Optional.empty();
+				 	 VariableReferenceNode varRefNode =  new VariableReferenceNode(matchedWordToken.get().getTokenValue());
+					 return Optional.of(varRefNode);
+				 
+			
 			
 		}
-		
+		return Optional.empty();
 	}
 	
-	
+	}
 		

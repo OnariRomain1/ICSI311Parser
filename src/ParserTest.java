@@ -1,13 +1,28 @@
+import org.junit.Test;
+
 import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 import java.util.LinkedList;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Test;
+
 
 public class ParserTest {
 
+	
+	@Test
+	public void ParseBlockBreakTest() throws Exception{
+
+		Lexer lexer = new Lexer("{break}");
+		lexer.Lex();
+		Parser parser = new Parser(lexer.GetLinkedListTokens());
+		BlockNode ParsedBlock = parser.ParseBlock();
+		assertEquals(ParsedBlock.statementNodes.getFirst().toString(), "BREAK");
+		
+		
+	}
+	
 	
 	@Test
 	public void AcceptSeparators() {
@@ -42,6 +57,7 @@ public class ParserTest {
         assertEquals(2, programNode.getFunctionDefNodes().get(0).getParameters().size()); 
         
     }
+    
 	
 	@Test
 	public void testParseFunction_NoValidFunctionDefinition() throws Exception {
@@ -366,6 +382,8 @@ public class ParserTest {
 		
 		
 	}	
+	
+	
 	
 	
 }

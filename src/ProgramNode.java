@@ -1,3 +1,4 @@
+
 import java.util.LinkedList;
 
 public class ProgramNode extends Node{
@@ -11,7 +12,7 @@ public class ProgramNode extends Node{
 	/*The ProgramNode Constructor 
 	initializes the linkedLists
 	*/
-	ProgramNode(){
+	public ProgramNode(){
 		
 		functionDefNodes = new LinkedList<FunctionDefinitionNode>();
 		blockNodes = new LinkedList<BlockNode>();
@@ -21,8 +22,26 @@ public class ProgramNode extends Node{
 	}
 
 	public String toString() {
+		StringBuilder ProgramNodeBuilder = new StringBuilder();
+		
+		for(FunctionDefinitionNode functionDefNode: functionDefNodes) {
+			ProgramNodeBuilder.append( "FunctionDefinitionNodes: " + functionDefNode.toString() + "\n");
+		}
+		
+		for(BlockNode blockNode: blockNodes) {
+			ProgramNodeBuilder.append("BlockNodes: " +  blockNode.toString() + "\n");
+		}
+		
+		for(BeginBlockNode startBlock: startBlocks) {
+			ProgramNodeBuilder.append("StartBlocks: " +  startBlock.toString() + "\n");
+		}
+		
+		for(EndBlockNode endBlock: endBlocks) {
+			ProgramNodeBuilder.append("EndBlocks: " +  endBlock.toString() + "\n");
+		}
 
-		return functionDefNodes.toString() + startBlocks.toString() + blockNodes.toString()+ endBlocks.toString();
+		return ProgramNodeBuilder.toString();
+
 	}
 	
 	/*
