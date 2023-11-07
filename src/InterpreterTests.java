@@ -117,7 +117,7 @@ public class InterpreterTests {
         float rightFloatVal = 1.2F;
         ConstantNode leftValue = new ConstantNode(Float.toString(leftFloatVal));
         OperationNode TestOperationNode = new OperationNode(leftValue, Operations.EQ,Optional.of(new ConstantNode(Float.toString(rightFloatVal))));
-        Optional<InterpreterDataType> Op = interpreter.HandleOperationNode(TestOperationNode,interpreter.iDThashMap);
+        Optional<InterpreterDataType> Op = interpreter.HandleCompareOperations(TestOperationNode,interpreter.iDThashMap);
         assertNotNull(Op);
         assertEquals("true", Op.get().getValue());
     }
@@ -125,7 +125,7 @@ public class InterpreterTests {
 
         ConstantNode leftValue = new ConstantNode("bob");
         OperationNode TestOperationNode = new OperationNode(leftValue, Operations.EQ,Optional.of(new ConstantNode("burgers") ));
-        Optional<InterpreterDataType> Op = interpreter.HandleOperationNode(TestOperationNode,interpreter.iDThashMap);
+        Optional<InterpreterDataType> Op = interpreter.HandleCompareOperations(TestOperationNode,interpreter.iDThashMap);
         assertNotNull(Op);
         assertEquals("false", Op.get().getValue());
     }
@@ -206,8 +206,124 @@ public class InterpreterTests {
         assertTrue(Op.isPresent());
         assertFalse(Boolean.parseBoolean(Op.get().getValue()));
     }
+    @Test public void HandleBooleanOperationsTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("1");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.AND,Optional.of(new ConstantNode("2")));
+        Optional<InterpreterDataType> Op = interpreter.HandleBooleanOperations(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertTrue(Boolean.parseBoolean(Op.get().getValue()));
+    }
+    @Test public void HandleBooleanOperationsNotFloatTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("notFloat");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.AND,Optional.of(new ConstantNode("2")));
+        Optional<InterpreterDataType> Op = interpreter.HandleBooleanOperations(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertFalse(Op.isPresent());
+
+    }
+    @Test public void HandleBooleanOperationsORTest() throws Exception {
+
+        ConstantNode leftValue = new ConstantNode("notFloat");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.OR, Optional.of(new ConstantNode("2")));
+        Optional<InterpreterDataType> Op = interpreter.HandleBooleanOperations(TestOperationNode, interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertTrue(Boolean.parseBoolean(Op.get().getValue()));
+
+    }
+    @Test public void HandleBooleanOperationsNotTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("0");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.NOT);
+        Optional<InterpreterDataType> Op = interpreter.HandleBooleanOperations(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertTrue(Boolean.parseBoolean(Op.get().getValue()));
+
+    }
+    @Test public void HandleMatchOperationsTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("abcdef");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.MATCH, Optional.of(new PatternNode("ef")));
+        Optional<InterpreterDataType> Op = interpreter.HandleMatchOperations(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertTrue(Boolean.parseBoolean(Op.get().getValue()));
+
+    }
+    @Test public void HandleMatchOperationsNotTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("abcdef");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.NOTMATCH, Optional.of(new PatternNode("hi")));
+        Optional<InterpreterDataType> Op = interpreter.HandleMatchOperations(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertTrue(Boolean.parseBoolean(Op.get().getValue()));
+
+    }
+
+    @Test public void HandlePre_Post_UnaryTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("8");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.PREINC);
+        Optional<InterpreterDataType> Op = interpreter.HandlePre_Post_Unary(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertEquals("9.0",Op.get().getValue());
+
+    }
+    @Test public void HandlePre_Post_UnaryStringTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("i");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.POSTDEC);
+        Optional<InterpreterDataType> Op = interpreter.HandlePre_Post_Unary(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertEquals("i--",Op.get().getValue());
+
+    }
+    @Test public void HandlePre_Post_UnaryNegTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("8");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.UNARYNEG);
+        Optional<InterpreterDataType> Op = interpreter.HandlePre_Post_Unary(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertEquals("-8.0",Op.get().getValue());
+
+    }
+    @Test public void HandleStringConcatenationTest() throws Exception{
+
+        ConstantNode leftValue = new ConstantNode("Hello ");
+        OperationNode TestOperationNode = new OperationNode(leftValue, Operations.CONCATENATION, Optional.of(new ConstantNode("World")));
+        Optional<InterpreterDataType> Op = interpreter.HandleConcatenation(TestOperationNode,interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertTrue(Op.isPresent());
+        assertEquals("Hello World",Op.get().getValue());
+
+    }
+
+    @Test public void HandleConstantNodeTest() throws Exception{
+
+        ConstantNode ConstantNodeTest = new ConstantNode("45");
+        InterpreterDataType Op = interpreter.constantNodeMethod(ConstantNodeTest);
+        assertNotNull(Op);
+        assertEquals("45",Op.getValue());
+
+    }
 
 
+    @Test public void HandleFunctionCallNodeTest() throws Exception{
+
+        FunctionCallNode functionCallNode = new FunctionCallNode("");
+        InterpreterDataType Op = interpreter.HandleFunctionCall(functionCallNode, interpreter.iDThashMap);
+        assertNotNull(Op);
+        assertEquals("",Op.getValue());
+
+    }
 
 
     @Test public void CanConvertToFloatTest(){

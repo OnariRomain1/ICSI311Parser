@@ -45,15 +45,6 @@ public class Interpreter {
 		}
 	}
 
-//TODO:
-	/*/
-	Remember the interpreter is mimicking the Parser and we are using the values stored within the values
-	by converting them into floats and then doing the actual actions that the nodes are respresenting
-	and checking if its valid, if not we are throwing exceptions
-	TODO Re-asses if the things i have done so far are true and also implement the rest of what is being said in the instructions.
-	TODO Also i really need to figure out how to properly test my functions i feel like ive been struggling the most with trying to check if what im doing is correct
-	and because of it im more anxious on if im getting a decent grade
-	 */
 	public Optional<InterpreterDataType> GetIDT(Node node, HashMap<String, InterpreterDataType> localVariables) throws Exception {
 
 		if (node instanceof AssignmentNode) {
@@ -63,7 +54,7 @@ public class Interpreter {
 			return Optional.ofNullable(constantNodeMethod((ConstantNode) node));
 		}
 		else if (node instanceof FunctionCallNode) {
-			return Optional.ofNullable(new InterpreterDataType(RunFunctionCall((FunctionCallNode) node, localVariables)));
+			return Optional.ofNullable(HandleFunctionCall((FunctionCallNode) node, localVariables));
 		} else if (node instanceof PatternNode){
 			throw new Exception("Error: Trying to pass a pattern to a function or assignment");
 		} else if (node instanceof TernaryNode){
@@ -71,17 +62,23 @@ public class Interpreter {
 		} else if (node instanceof VariableReferenceNode){
 			VariableReferenceNode variableReference = (VariableReferenceNode) node;
 			if (variableReference.node.isPresent()) {
-
 				if (variableReference.node.get() instanceof InterpreterArrayDataType) {
-					//TODO: Figure out how to do "resolving the index then look the index up in the variables hash map"
-					//TODO: Also turn this into a method for beter readability
-					//get the right index Ex: b = a[5]
 					//call getIdt on the right value
+					Optional<InterpreterDataType> right = GetIDT(variableReference, localVariables);
 					//check the global variables for the variable name
+					if(localVariables.containsKey(variableReference.variableName)){
+						for (InterpreterDataType values : localVariables.values()){
+							if (values.getValue().equals(right.get().getValue())){
+								return Optional.of(new InterpreterDataType(right.get().getValue()));
+							}
+						}
+					}else {
+						throw new Exception("Variable Name not in global variables");
+					}
 					//if no name is present in the global variables then throw an exception
-					//Optional<InterpreterDataType> RightVal = GetIDT()
 				} else {
-					return Optional.ofNullable(new InterpreterDataType(localVariables.get(variableReference.variableName).value));
+					InterpreterDataType VariableRef = localVariables.get(variableReference);
+					return Optional.of(VariableRef);
 				}
 			}else {
 				throw new Exception("Error Not an IADT");
@@ -90,30 +87,84 @@ public class Interpreter {
 		} else if (node instanceof OperationNode){
 			//Create a variable storing node as an OperationNode
 			OperationNode Operation = (OperationNode) node;
-			HandleOperationNode(Operation, localVariables);
-
+				Optional<InterpreterDataType> Handleoperation = HandleOperationNode(Operation, localVariables);
+				if (Handleoperation.isEmpty()){
+					Handleoperation = HandleDollarSign(Operation, localVariables);
+					if (Handleoperation.isEmpty()){
+						Handleoperation = HandleForIN(Operation, localVariables);
+						if (Handleoperation.isEmpty()){
+							Handleoperation = HandleMatchOperations(Operation,localVariables);
+							if (Handleoperation.isEmpty()){
+								Handleoperation = HandlePre_Post_Unary(Operation, localVariables);
+								if (Handleoperation.isEmpty()){
+									Handleoperation = HandleBooleanOperations(Operation, localVariables);
+									if (Handleoperation.isEmpty()){
+										Handleoperation = HandleCompareOperations(Operation, localVariables);
+									}
+								}
+							}
+						}
+					}
+				}
+				return Handleoperation;
 			}
 
 
-		//return new InterpreterDataType();
 		return Optional.empty();
 	}
+	Optional<InterpreterDataType> HandleDollarSign(OperationNode Operation,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
+
+			//deals with the Dollar Sign operation token
+			Optional<InterpreterDataType> left = GetIDT(Operation, localVariables);
+			if (Operation.getOperations() == Operations.DOLLAR) {
+				return Optional.of(new InterpreterDataType("$" + left.toString()));
+			}
+		return Optional.empty();
+	}
+
+	Optional<InterpreterDataType> HandleForIN(OperationNode operationNode,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
+
+		// checks if the right node is a variable referenceN and is an array
+		Optional<InterpreterDataType> right = GetIDT(operationNode.GetRightNode().get(), localVariables);
+		if(!(operationNode.GetRightNode().get() instanceof VariableReferenceNode) && !localVariables.containsValue(right)){
+			throw new Exception("Error: Right side is not a variable reference or an array.");
+		}
+		Optional<InterpreterDataType> leftValue = GetIDT(operationNode.getLeftNode(), localVariables);
+		String leftValueStr = leftValue.get().getValue();
+		//looks for the left nodes value within the array and returns true or false
+			for (String keys : localVariables.keySet()) {
+				if (keys.equals(leftValueStr)){
+					return Optional.of(new InterpreterDataType("true"));
+				}
+			}
+		return Optional.of(new InterpreterDataType("false"));
+	}
+
+	Optional<InterpreterDataType> HandleConcatenation(OperationNode Operation,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
+
+		Optional<InterpreterDataType> left = GetIDT(Operation.getLeftNode(), localVariables);
+		Optional<InterpreterDataType> right = GetIDT(Operation.GetRightNode().get(), localVariables);
+		//Checking for concatenation token then concatenating the two values and returning it
+		if (Operation.getOperations() == Operations.CONCATENATION) {
+			String result = left.get().getValue() + right.get().getValue();
+			return Optional.of(new InterpreterDataType(result));
+		}
+        return Optional.empty();
+    }
 
 	Optional<InterpreterDataType> HandleOperationNode(OperationNode Operation,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
 		//call Idt to get the left Value of the operation
 		Optional<InterpreterDataType> left = GetIDT(Operation.getLeftNode(), localVariables);
-		//Convert the left value to a float
 		if (CanConvertToFloat(left.get().value)) {
 			Float leftresult = Float.parseFloat(left.get().value);
-			//Get the Operation from the Node and store it as a Float
-			//Check if  the Optional Right Node is present
+			//Check if the Right Node is present
 			if (Operation.GetRightNode().isPresent()) {
-				//if present get the value and store it in a variable
 				Optional<InterpreterDataType> right = GetIDT(Operation.GetRightNode().get(), localVariables);
-				//Convert the right variable into a float
+				//if present check if the right node can be converted into a float
 				if (CanConvertToFloat(right.get().getValue())) {
 					Float rightresult = Float.valueOf(right.get().value);
 					Float FinishedOperation;
+					//This is checking for the Operation Token then doing the operation and returning it.
 					if (Operation.getOperations().equals(Operations.ADD)) {
 						FinishedOperation = leftresult + rightresult;
 						return Optional.of(new InterpreterDataType(FinishedOperation.toString()));
@@ -139,28 +190,6 @@ public class Interpreter {
 			}
 
 		}
-		if (Operation.getOperations().equals(Operations.EQ)) {
-			Optional<InterpreterDataType> Equal = HandleCompareOperations(Operation, localVariables);
-			if (Equal.isPresent()){
-				return Equal;
-			}
-		} if (Operation.getOperations().equals(Operations.LE)) {
-			Optional<InterpreterDataType> LessThan = HandleCompareOperations(Operation, localVariables);
-				return LessThan;
-
-		}else if (Operation.getOperations().equals(Operations.NE)) {
-					//DO a function call
-		}else if (Operation.getOperations().equals(Operations.GT)) {
-					//DO a function call
-		}else if (Operation.getOperations().equals(Operations.LT)) {
-					//DO a function call
-		}else if (Operation.getOperations().equals(Operations.GE)) {
-					//DO a function call
-				}
-
-
-
-
 
 		return Optional.empty();
 	}
@@ -170,35 +199,133 @@ public class Interpreter {
 		return new InterpreterDataType(value);
 	}
 
-	//TODO Test
-	Optional<InterpreterDataType> HandleBooleanOperations(OperationNode OperationNode, HashMap<String, InterpreterDataType> localVariables) throws Exception {
-		Optional<InterpreterDataType> leftValue = GetIDT(OperationNode.getLeftNode(), localVariables);
-		Optional<InterpreterDataType> rightValue =GetIDT(OperationNode.GetRightNode().get(), localVariables);
+	Optional<InterpreterDataType> HandleMatchOperations(OperationNode operationNode, HashMap<String, InterpreterDataType> localVariables ) throws Exception {
+		//checking for if the rightNode is an instance of PatternNode otherwise an exception is thrown
+		if (!(operationNode.GetRightNode().get() instanceof PatternNode)) {
+			throw new Exception("Right side of operation must be a PatternNode.");
+		}
+		Optional<InterpreterDataType> LeftValue = GetIDT(operationNode.getLeftNode(), localVariables);
+		PatternNode rightPattern = (PatternNode)operationNode.GetRightNode().get();
+		String rightValue = rightPattern.GetValue();
+		Pattern pattern = Pattern.compile(rightValue);
+		Matcher matcher = pattern.matcher(LeftValue.get().getValue());
+		//Checking for the Match token and returning true or false if a match is found
+		if (operationNode.getOperations() == Operations.MATCH) {
+			boolean matchFound = matcher.find();
+			return Optional.of(new InterpreterDataType(Boolean.toString(matchFound)));
+		//Checking for the NotMatch token and returning true or false if a match is not found
+		} else if (operationNode.getOperations() == Operations.NOTMATCH){
+			boolean NotFound = !matcher.find();
+			return Optional.of(new InterpreterDataType(Boolean.toString(NotFound)));
+		}
+		return Optional.empty();
+	}
 
-		if (CanConvertToFloat(leftValue.get().getValue())){
-			Float leftIsFloat = Float.parseFloat(leftValue.get().getValue());
-			if (CanConvertToFloat(rightValue.get().getValue())) {
-				Float rightIsFloat = Float.parseFloat(rightValue.get().getValue());
-				if (OperationNode.operation.equals(Operations.AND)) {
-					boolean result = (leftIsFloat != 0) && (rightIsFloat != 0);
-					return Optional.of(new InterpreterDataType(Boolean.toString(result)));
-				} else if (OperationNode.operation.equals(Operations.OR)) {
-					boolean result = (leftIsFloat != 0) || (rightIsFloat != 0);
-					return Optional.of(new InterpreterDataType(Boolean.toString(result)));
-				}
-				}
-			if (OperationNode.operation.equals(Operations.NOT)) {
-				boolean LeftIsTrue  = leftIsFloat != 0;
-				boolean result = !LeftIsTrue;
-				return Optional.of(new InterpreterDataType(Boolean.toString(result)));
+	Optional<InterpreterDataType> HandlePre_Post_Unary(OperationNode OperationNode, HashMap<String, InterpreterDataType> localVariables) throws Exception {
+		Optional<InterpreterDataType> leftValue = GetIDT(OperationNode.getLeftNode(), localVariables);
+		/*
+		These if statements check for the Post/Pre/Unary increment or decrement tokens and performs the operation and returns the value
+		first checks if the left node can be converted into a float otherwise it performs the operations using strings
+		 */
+		if(CanConvertToFloat(leftValue.get().getValue())){
+			Float LeftIsFloat = Float.parseFloat(leftValue.get().getValue());
+			Float result;
+			if (OperationNode.getOperations() == Operations.PREINC){
+				result = ++LeftIsFloat;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+			} else if(OperationNode.getOperations() == Operations.PREDEC){
+				result = --LeftIsFloat;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+			} else if(OperationNode.getOperations() == Operations.POSTINC){
+				result = LeftIsFloat++;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+			}else if(OperationNode.getOperations() == Operations.POSTDEC){
+				result = LeftIsFloat--;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+			}else if(OperationNode.getOperations() == Operations.UNARYNEG){
+				result = -LeftIsFloat;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+			}else if(OperationNode.getOperations() == Operations.UNARYPOS){
+				result = +LeftIsFloat;
+				return Optional.of(new InterpreterDataType(Float.toString(result)));
+		}
+		}else {
+			if (OperationNode.getOperations() ==Operations.PREDEC) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = "--" + LeftIsStr;
+				return Optional.of(new InterpreterDataType(result));
+			} else if (OperationNode.getOperations() ==Operations.PREINC) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = "++" + LeftIsStr;
+				return Optional.of(new InterpreterDataType(result));
+			} else if (OperationNode.getOperations() ==Operations.POSTDEC) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = LeftIsStr +"--";
+				return Optional.of(new InterpreterDataType(result));
+			}else if (OperationNode.getOperations() ==Operations.PREINC) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = LeftIsStr + "++";
+				return Optional.of(new InterpreterDataType(result));
+			}else if (OperationNode.getOperations() ==Operations.UNARYPOS) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = "+" + LeftIsStr;
+				return Optional.of(new InterpreterDataType(result));
+			}else if (OperationNode.getOperations() ==Operations.UNARYNEG) {
+				String LeftIsStr = leftValue.get().getValue();
+				String result = "-" + LeftIsStr;
+				return Optional.of(new InterpreterDataType(result));
 			}
 
 		}
+		return Optional.empty();
+	}
+
+	Optional<InterpreterDataType> HandleBooleanOperations(OperationNode OperationNode, HashMap<String, InterpreterDataType> localVariables) throws Exception {
+		Optional<InterpreterDataType> leftValue = GetIDT(OperationNode.getLeftNode(), localVariables);
+
+		/*
+			These if statements deal with NOT, AND, OR operation tokens and returns true or false
+		 */
+		if (OperationNode.GetRightNode() == null) {
+			if (OperationNode.operation.equals(Operations.NOT)) {
+				if (leftValue.isPresent()) {
+					if (CanConvertToFloat(leftValue.get().getValue())) {
+						Float leftAsFloat = Float.parseFloat(leftValue.get().getValue());
+						boolean result = !(leftAsFloat != 0);
+						return Optional.of(new InterpreterDataType(Boolean.toString(result)));
+					}
+
+				}
+			}
+		}
+		Optional<InterpreterDataType> rightValue =GetIDT(OperationNode.GetRightNode().get(), localVariables);
+
+			if (OperationNode.operation.equals(Operations.AND)) {
+				if (CanConvertToFloat(leftValue.get().getValue()) && CanConvertToFloat(rightValue.get().getValue())) {
+					Float leftAsFloat = Float.parseFloat(leftValue.get().getValue());
+					Float rightAsFloat = Float.parseFloat(rightValue.get().getValue());
+					boolean result = (leftAsFloat != 0) && (rightAsFloat != 0);
+					return Optional.of(new InterpreterDataType(Boolean.toString(result)));
+				}
+
+			} else if (OperationNode.operation.equals(Operations.OR)) {
+					boolean LeftCheck = CanConvertToFloat(leftValue.get().getValue()) && (Float.parseFloat(leftValue.get().getValue()) != 0);
+					boolean RightCheck = CanConvertToFloat(rightValue.get().getValue()) && (Float.parseFloat(rightValue.get().getValue()) != 0);
+					boolean result = LeftCheck || RightCheck;
+					return Optional.of(new InterpreterDataType(Boolean.toString(result)));
+
+			}
 
 		return Optional.empty();
 	}
-	Optional<InterpreterDataType> HandleCompareOperations(OperationNode OperationNode,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
 
+	Optional<InterpreterDataType> HandleCompareOperations(OperationNode OperationNode,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
+		/*
+		This method deals with Comparison Operations for both Strings and floats
+		First it checks if both the left and right nodes can be converted to floats
+		then it sets the values from the nodes as floats and does the comparison operations based on the Operation tokens
+		if the value can't convert to a float then the same process is done but with strings being compared instead.
+		 */
 		Optional<InterpreterDataType> leftValue = GetIDT(OperationNode.getLeftNode(), localVariables);
 		Optional<InterpreterDataType> rightValue =GetIDT(OperationNode.GetRightNode().get(), localVariables);
 		if (rightValue.isPresent()) {
@@ -254,10 +381,11 @@ public class Interpreter {
 		return Optional.empty();
 	}
 
-
-	//TODO: Testing
 	Optional<InterpreterDataType> AssignmentMethod(AssignmentNode node,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
-
+		/*
+			This method checks if the assignment node is a variableReferenceNode or OperationNode with type dollar
+			calls GetIDT for the right node then sets the target value to the result and returns it
+		 */
 		AssignmentNode assignmentNode = (AssignmentNode) node;
 
 		if (assignmentNode.getTarget() instanceof VariableReferenceNode) {
@@ -283,6 +411,7 @@ public class Interpreter {
 		return Optional.empty();
 	}
 
+	//Helper Method to check for If a string can convert to a float
 	boolean CanConvertToFloat (String stringToFloat) {
 		try {
 			Float.parseFloat(stringToFloat);
@@ -291,23 +420,24 @@ public class Interpreter {
 			return false;
 		}
 	}
-	//TODO: Testing
-	String RunFunctionCall(FunctionCallNode functionCall, HashMap<String, InterpreterDataType> localVariables){
-		return "";
-	}
-	//TODO: Testing 
-	String TernaryMethod(TernaryNode ternaryNode,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
 
-		Optional<InterpreterDataType> condition = GetIDT(ternaryNode, localVariables);
+	InterpreterDataType HandleFunctionCall(FunctionCallNode functionCall, HashMap<String, InterpreterDataType> localVariables){
+		return new InterpreterDataType("");
+	}
+
+
+	Optional<InterpreterDataType> TernaryMethod(TernaryNode ternaryNode,  HashMap<String, InterpreterDataType> localVariables) throws Exception {
+		//evaluates the boolean condition and returns either true or false
+		Optional<InterpreterDataType> condition = GetIDT(ternaryNode.getCondition(), localVariables);
 		if (condition.isPresent()){
 			if (condition.get().value.equals("true")){
-				return "true";
+				return Optional.of(new InterpreterDataType("true"));
 			}
 			else if (condition.get().value.equals("false")) {
-				return "false";
+				return Optional.of(new InterpreterDataType("false"));
 			}
 		}
-		return "";
+		return Optional.empty();
 	}
 
 
